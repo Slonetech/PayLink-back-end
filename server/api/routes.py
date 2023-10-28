@@ -8,13 +8,10 @@ from api.serialization import transactions_Schema,create_transaction
 # from api.serialization import vendor_model_input,post_user
 import uuid
 
-from faker import Faker
-import random 
-from random import randint, choice as rc
-fake = Faker()
+
 
 import jwt
-from functools import wraps
+
 
 from flask_jwt_extended import JWTManager,jwt_required
 from flask_jwt_extended import create_refresh_token,create_access_token, get_jwt_identity
