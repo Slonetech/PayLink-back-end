@@ -80,11 +80,13 @@ class Transactions(Resource):
             return make_response(jsonify({"message":"no beneficiaries found"}))
         
         return make_response(transactions_Schema.dump(all_transactions),200)
+    
+    #_______C R E A T E _____________-T R A N S A C T I O N S_________________
     @ns.expect(create_transaction)
     def post(self):
         data = request.get_json()
         print(data)
-        #post the transaction
+        #-------------------------post the transaction
         transaction = Transaction(
             amount=data['amount'],
             receiver_account=data['receiver_account'],
@@ -92,7 +94,9 @@ class Transactions(Resource):
             category_id=Category.query.filter_by(type=data['category']).first().id,
             status='Sent'
         )
-
+        #---- we check if the receiver is a beneficiary of the sender
+        #---------check if th erciver id is in 
+        #--------------move the money 
         sender = User_Profile.query.filter_by(id = data['sender_id']).first()
         sender.wallet.balance -= data['amount']
         receiver = User_Profile.query.filter_by(Account = data['receiver_account']).first()
