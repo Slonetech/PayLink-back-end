@@ -11,6 +11,21 @@ api.add_namespace(ns)
 
 
 
+
+class UserSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = User
+        ordered = True
+
+    beneficiaries = ma.List(ma.Nested("BeneficiarySchema"))
+    wallet = ma.Nested("WalletSchema")
+
+User_Schema = UserSchema()
+Users_Schema = UserSchema(many=True)
+
+
+
+
 class UserProfileSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = User_Profile
@@ -68,6 +83,32 @@ create_transaction =api.model('create_transaction',{
     'category':fields.String,
 
  
+  
+
+})
+'''__________S I G N U P ____________'''
+
+user_model_input =api.model('signup',{
+    
+    'user_name':fields.String,
+    # 'profile_picture':fields.String,
+    'password':fields.String,
+    # 'roles':fields.String change--- this when handlind the posting
+    # 'public_id':fields.String,-- and this one aswell
+  
+
+})
+
+
+post_user =api.model('signup_post',{
+
+    'first_name':fields.String,
+    'last_name':fields.String,
+    'user_name':fields.String,
+    'email':fields.String,
+    'password':fields.String,
+    'address':fields.String,
+    'phone':fields.String
   
 
 })

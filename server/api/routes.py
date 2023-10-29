@@ -2,19 +2,19 @@ from api import  make_response,jsonify,User_Profile,User,UserBeneficiary,Benefic
 from api import  make_response,jsonify,Category,app,db,request
 from api.serialization import api,ns,auth,Resource
 from api.serialization import UserProfiles_Schema,UserProfile_Schema
-from api.serialization import wallets_Schema
+from api.serialization import wallets_Schema,wallet_Schema
 from api.serialization import transactions_Schema,create_transaction
+from api.serialization import post_user,user_model_input,User_Schema
 # from api.serialization import user_schema,ns,auth,Resource,user_model_input,login_input_model,vendor_model_update
 # from api.serialization import vendor_model_input,post_user
 import uuid
-
-from faker import Faker
+import string
 import random 
 from random import randint, choice as rc
-fake = Faker()
+
 
 import jwt
-from functools import wraps
+
 
 from flask_jwt_extended import JWTManager,jwt_required
 from flask_jwt_extended import create_refresh_token,create_access_token, get_jwt_identity
@@ -23,6 +23,127 @@ from flask_jwt_extended import create_refresh_token,create_access_token, get_jwt
 jwt = JWTManager(app)
 
 
+
+@auth.route('/signup')
+class Signup (Resource):
+    @auth.expect(user_model_input)
+    # @auth.marshal_with(post_user)
+    def post(self):
+      
+        data =request.get_json()
+        print(data)
+    
+        if data['user_name'] in [user.user_name for user in User.query.all()]:
+            return make_response(jsonify({"message":"username already taken"}))
+        
+      
+        new_user = User(
+            user_name=data['user_name'],           
+            password_hash = data['password'],
+            public_id = str(uuid.uuid4()),
+            is_admin=0
+
+        )
+
+        
+
+       
+
+        db.session.add(new_user)
+        db.session.commit()
+        
+        code =['+254','+256','+252','+251']
+       
+        user_profile = User_Profile(            
+        first_name=data['first_name'],
+        last_name = data['last_name'],
+        phone_number=str(rc(code)) +str(data['phone_number']),
+        address=data['address'],
+        Account = ''.join(random.choice(string.digits) for _ in range(14)),            
+        profile_pictur='https://images.ctfassets.net/h6goo9gw1hh6/2sNZtFAWOdP1lmQ33VwRN3/24e953b920a9cd0ff2e1d587742a2472/1-intro-photo-final.jpg?w=1200&h=992&fl=progressive&q=70&fm=jpg',
+        user_id = new_user.id,
+        # email=data['first_name']+'@' + rc(['gmail','yahoo','outlook','iCloud Mail '])+'.com',
+        )
+
+        db.session.add(user_profile)
+        db.session.commit()
+
+        #---------CREATE A WALLET FOR THE USER
+        new_wallet = Wallet(
+            balance=0,
+            user_prof_id=user_profile.id
+
+        )
+        db.session.add(new_wallet)
+        db.session.commit()
+        # print('-----------------------------------------------')
+
+        # print(new_user)
+
+        # return new_user,200
+        # return make_response(User_Schema.dump(user_profile),200)
+        # return make_response(UserProfile_Schema.dump(user_profile),200)
+        # return make_response(wallet_Schema.dump(new_wallet),200)
+        return make_response(jsonify(
+            {"message":"thank you for joining us"}
+        ),200)
+
+
+# Create a route to authenticate your users and return JWTs. The
+# create_access_token() function is used to actually generate the JWT.
+@auth.route('/login')
+class Login(Resource):
+    def post(self):
+        print('---------------------------')
+        print(request.get_json())
+        username = request.get_json().get("username",None)
+        password = request.get_json().get("password",None)
+
+
+        if not username and not password:
+            return jsonify({"msg": "Bad username or password"})
+        
+        user = User.query.filter_by(user_name=username).first()
+        # print(user)
+    
+        print('----------------------------------------')    
+        if not user:
+            return jsonify({"message": "User not found"})
+        
+        user_profile = User_Profile.query.filter_by(user_id=user.id).first()
+        # print(user_profile)
+        # user_claims= UserObject( user_id=user.id ,user_name=user.user_name,user_role=user.roles)
+        # print(user_claims)
+     
+     
+        access_token = create_access_token(identity=user.id)
+        refresh_token = create_refresh_token(identity=user.id)
+
+        return jsonify({
+            "access_token": access_token,
+            "refresh_token":refresh_token,
+            "user_id":user_profile.id,
+            "user_name":user_profile.first_name,
+            "user_role":user.is_admin,
+            "user_profile_pic":user_profile.profile_pictur
+
+            
+
+        })
+
+
+       #***************R E F R E S H_____-T O K E N 
+@auth.route('/refresh')
+class Refresh(Resource):
+    @jwt_required(refresh=True)
+    def post(self):
+        # print(request.get_json())
+        identity = get_jwt_identity()
+        print(identity)
+        access = create_access_token(identity = identity)
+
+    
+        return jsonify({"access_token":access})
 
 
 
@@ -80,11 +201,13 @@ class Transactions(Resource):
             return make_response(jsonify({"message":"no beneficiaries found"}))
         
         return make_response(transactions_Schema.dump(all_transactions),200)
+    
+    #_______C R E A T E _____________-T R A N S A C T I O N S_________________
     @ns.expect(create_transaction)
     def post(self):
         data = request.get_json()
         print(data)
-        #post the transaction
+        #-------------------------post the transaction
         transaction = Transaction(
             amount=data['amount'],
             receiver_account=data['receiver_account'],
@@ -92,7 +215,9 @@ class Transactions(Resource):
             category_id=Category.query.filter_by(type=data['category']).first().id,
             status='Sent'
         )
-
+        #---- we check if the receiver is a beneficiary of the sender
+        #---------check if th erciver id is in 
+        #--------------move the money 
         sender = User_Profile.query.filter_by(id = data['sender_id']).first()
         sender.wallet.balance -= data['amount']
         receiver = User_Profile.query.filter_by(Account = data['receiver_account']).first()
