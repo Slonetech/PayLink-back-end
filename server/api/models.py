@@ -70,7 +70,7 @@ class User_Profile(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     user = db.relationship('User', backref='users_profile',uselist=False)
 
-    wallet = db.relationship('Wallet', back_populates='user_profile', uselist=False)
+    wallet = db.relationship('Wallet', back_populates='user_profile', cascade='all,delete-orphan',uselist=False)
 
 
 
@@ -174,11 +174,11 @@ class Wallet(db.Model):
 
 
     user_prof_id = db.Column(db.Integer, db.ForeignKey('users_profile.id'))
-    user_profile = db.relationship('User_Profile', back_populates='wallet', uselist=False)
+    user_profile = db.relationship('User_Profile', back_populates='wallet', )
 
  
     def __repr__(self):
-        return f'(id: {self.id}, balance: {self.balance},user_id:  )'
+        return f'(id: {self.id}, balance: {self.balance},user_id: {self.user_prof_id}  )'
 
 
 

@@ -11,168 +11,168 @@ import string
 fake = Faker()
 
 with app.app_context():
-    User.query.delete()
+    # User.query.delete()
 
-    user_list = []
-    for user in range(50):      
+    # user_list = []
+    # for user in range(50):      
 
         
-        user_name = fake.unique.user_name()
-        company = fake.company()
+    #     user_name = fake.unique.user_name()
+    #     company = fake.company()
 
-        user = User(
-            user_name=user_name,
-            password_hash = str(random.randint(2,54324423)),
-            public_id = str(uuid.uuid4()),
-            is_admin=rc([0,1])
+    #     user = User(
+    #         user_name=user_name,
+    #         password_hash = str(random.randint(2,54324423)),
+    #         public_id = str(uuid.uuid4()),
+    #         is_admin=rc([0,1])
 
          
-        )
-        user_list.append(user)
-    db.session.add_all(user_list)
-    db.session.commit()
+    #     )
+    #     user_list.append(user)
+    # db.session.add_all(user_list)
+    # db.session.commit()
 
 
             # email=user_name.split(' ')[0]+"@"+company[:5]+".com",
 
 
     '''-------------- USER Profile TABLE-----------------------'''
-    User_Profile.query.delete()
+    # User_Profile.query.delete()
 
-    users_profile_list = []
-    users =[user.id for user in user_list if user.is_admin ==0]
-    
-    for user in user_list:      
+    # users_profile_list = []
+    # users =[user.id for user in user_list if user.is_admin ==0]
+    # i=0
+    # for user in user_list:      
 
-        if user.is_admin==0:
+    #     if user.is_admin==0:
         
       
-            user_id =rc([user.id for user in user_list])
-    #
-            user = User_Profile(
-                first_name = fake.unique.user_name(),
-                last_name = fake.unique.user_name(),
-                address = fake.address(),
-                phone_number=random.randint(1111111111,9999999999),
-                Account = ''.join(random.choice(string.digits) for _ in range(14)),            
-                profile_pictur='https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-                user_id = user_id
+          
+    # #
+    #         user = User_Profile(
+    #             first_name = fake.unique.user_name(),
+    #             last_name = fake.unique.user_name(),
+    #             address = fake.address(),
+    #             phone_number=random.randint(1111111111,9999999999),
+    #             Account = ''.join(random.choice(string.digits) for _ in range(14)),            
+    #             profile_pictur='https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+    #             user_id = [user.id for user in user_list][i]
                 
 
             
-            )
-            if user.user_id not in [user.user_id for user in users_profile_list]:
-                users_profile_list.append(user)
-    db.session.add_all(users_profile_list)
-    db.session.commit()
+    #         )
+    #         i+=1
+   
+    #         users_profile_list.append(user)
+    # db.session.add_all(users_profile_list)
+    # db.session.commit()
 
 
 
-    Wallet.query.delete()
+    # Wallet.query.delete()
 
-    wallet_list = []
-    for user in user_list:
-            if user.is_admin==0:
-                wallet = Wallet(
-                    balance=random.randint(1000, 50000),
-                    user_prof_id= user.id
+    # wallet_list = []
+    # for user in users_profile_list:
+    #     wallet = Wallet(
+    #                 balance=random.randint(1000, 50000),
+    #                 user_prof_id= user.id
                     
-                )
-                wallet_list.append(wallet)
+    #             )
+    #     wallet_list.append(wallet)
 
-    db.session.add_all(wallet_list)
-    db.session.commit()
+    # db.session.add_all(wallet_list)
+    # db.session.commit()
 
 
     '''C A T E G O R I E S_________T A B L E         S E E D I N G _______________'''
-    Category.query.delete()
-    category_list=[]
-    categories = ["Food", "Rent", "Fees", "Investment", "Entertainment", "Transportation", "Utilities", "Healthcare", "Education", "Travel"]
-    i=0
-    for i in range(8):
-         category = Category(
-              type=categories[i]
-         )
-         i+=1
-         category_list.append(category)    
-    db.session.add_all(category_list)
-    db.session.commit()
+    # Category.query.delete()
+    # category_list=[]
+    # categories = ["Food", "Rent", "Fees", "Investment", "Entertainment", "Transportation", "Utilities", "Healthcare", "Education", "Travel"]
+    # i=0
+    # for i in range(8):
+    #      category = Category(
+    #           type=categories[i]
+    #      )
+    #      i+=1
+    #      category_list.append(category)    
+    # db.session.add_all(category_list)
+    # db.session.commit()
         
 
 
 
     '''Transactions table        S E E D I N G _______________'''
 
-    Transaction.query.delete()
-    category_id = [cat.id for cat in category_list]
-    transaction1 = Transaction(
-        sender_id=[user.id for user in users_profile_list][0],
-        amount= random.randint(111111,999999),
-        receiver_account=[user.Account for user in users_profile_list][1],
-        status='pending',
-        category_id =rc(category_id)
+#     Transaction.query.delete()
+#     category_id = [cat.id for cat in category_list]
+#     transaction1 = Transaction(
+#         sender_id=[user.id for user in users_profile_list][0],
+#         amount= random.randint(111111,999999),
+#         receiver_account=[user.Account for user in users_profile_list][1],
+#         status='pending',
+#         category_id =rc(category_id)
         
-  )
-    transaction2 = Transaction(
-        sender_id=[user.id for user in users_profile_list][1],
-        amount= random.randint(111111,999999),
-        receiver_account=[user.Account for user in users_profile_list][2],
-        status='sent',
-        category_id =rc(category_id)
+#   )
+#     transaction2 = Transaction(
+#         sender_id=[user.id for user in users_profile_list][1],
+#         amount= random.randint(111111,999999),
+#         receiver_account=[user.Account for user in users_profile_list][2],
+#         status='sent',
+#         category_id =rc(category_id)
         
-  )
-    transaction3 = Transaction(
-        sender_id=[user.id for user in users_profile_list][2],
-        amount= random.randint(111111,999999),
-        receiver_account=[user.Account for user in users_profile_list][3],
-        status='pending',
-        category_id =rc(category_id)
+#   )
+#     transaction3 = Transaction(
+#         sender_id=[user.id for user in users_profile_list][2],
+#         amount= random.randint(111111,999999),
+#         receiver_account=[user.Account for user in users_profile_list][3],
+#         status='pending',
+#         category_id =rc(category_id)
         
-  )
-    transaction4 = Transaction(
-        sender_id=[user.id for user in users_profile_list][3],
-        amount= random.randint(111111,999999),
-        receiver_account=[user.Account for user in users_profile_list][4],
-        status='sent',
-        category_id =rc(category_id)
+#   )
+#     transaction4 = Transaction(
+#         sender_id=[user.id for user in users_profile_list][3],
+#         amount= random.randint(111111,999999),
+#         receiver_account=[user.Account for user in users_profile_list][4],
+#         status='sent',
+#         category_id =rc(category_id)
         
-  )
-    transaction5 = Transaction(
-        sender_id=[user.id for user in users_profile_list][0],
-        amount= random.randint(111111,999999),
-        receiver_account=[user.Account for user in users_profile_list][3],
-        status='pending',
-        category_id =rc(category_id)
+#   )
+#     transaction5 = Transaction(
+#         sender_id=[user.id for user in users_profile_list][0],
+#         amount= random.randint(111111,999999),
+#         receiver_account=[user.Account for user in users_profile_list][3],
+#         status='pending',
+#         category_id =rc(category_id)
         
-  )
-    transaction6 = Transaction(
-        sender_id=[user.id for user in users_profile_list][0],
-        amount= random.randint(111111,999999),
-        receiver_account=[user.Account for user in users_profile_list][2],
-        status='sent',
-        category_id =rc(category_id)
+#   )
+#     transaction6 = Transaction(
+#         sender_id=[user.id for user in users_profile_list][0],
+#         amount= random.randint(111111,999999),
+#         receiver_account=[user.Account for user in users_profile_list][2],
+#         status='sent',
+#         category_id =rc(category_id)
         
-  )
-    transaction7 = Transaction(
-        sender_id=[user.id for user in users_profile_list][0],
-        amount= random.randint(111111,999999),
-        receiver_account=[user.Account for user in users_profile_list][3],
-        status='pending',
-        category_id =rc(category_id)
+#   )
+#     transaction7 = Transaction(
+#         sender_id=[user.id for user in users_profile_list][0],
+#         amount= random.randint(111111,999999),
+#         receiver_account=[user.Account for user in users_profile_list][3],
+#         status='pending',
+#         category_id =rc(category_id)
         
-  )
-    transaction8 = Transaction(
-        sender_id=[user.id for user in users_profile_list][0],
-        amount= random.randint(111111,9999999),
-        receiver_account=[user.Account for user in users_profile_list][3],
-        status='pending',
-        category_id =rc(category_id)
+#   )
+#     transaction8 = Transaction(
+#         sender_id=[user.id for user in users_profile_list][0],
+#         amount= random.randint(111111,9999999),
+#         receiver_account=[user.Account for user in users_profile_list][3],
+#         status='pending',
+#         category_id =rc(category_id)
         
-  )
+#   )
 
-    # db.session.add_all(wallet_list)
-    db.session.add_all([transaction1,transaction2,transaction3,transaction4,transaction5,transaction6,transaction7,transaction8])
-    db.session.commit()
+#     # db.session.add_all(wallet_list)
+#     db.session.add_all([transaction1,transaction2,transaction3,transaction4,transaction5,transaction6,transaction7,transaction8])
+#     db.session.commit()
 
 
 
@@ -248,6 +248,11 @@ with app.app_context():
     # print(user_profile1.beneficiaries)
 
 #--------------wallet and user profile relationship test
-    # wallet = Wallet.query.all()[0]
-    # print(wallet.user_profile)
-    # print(user_profile1.wallet)
+    wallet = Wallet.query.all()[0]
+    user_profile1 = User_Profile.query.all()[0]
+
+    print(wallet.user_profile)#--  first_name is osmith
+    print(user_profile1.wallet)#-- balance of 41010
+
+# (id: 1, first_name: osmith,last_name: qhurst, address: 1000 Samantha Loaf New Jodi, AL 63102,  phone: 8577326204 )
+# (id: 1, balance: 41010,user_id: 1  )

@@ -2,9 +2,10 @@ from api import  make_response,jsonify,User_Profile,User,UserBeneficiary,Benefic
 from api import  make_response,jsonify,Category,app,db,request
 from api.serialization import api,ns,auth,Resource
 from api.serialization import UserProfiles_Schema,UserProfile_Schema
-from api.serialization import wallets_Schema,wallet_Schema
+from api.serialization import wallet,wallets_Schema,wallet_Schema,update_wallet
 from api.serialization import transactions_Schema,create_transaction
 from api.serialization import post_user,user_model_input,User_Schema
+
 # from api.serialization import user_schema,ns,auth,Resource,user_model_input,login_input_model,vendor_model_update
 # from api.serialization import vendor_model_input,post_user
 import uuid
@@ -125,7 +126,8 @@ class Login(Resource):
             "user_id":user_profile.id,
             "user_name":user_profile.first_name,
             "user_role":user.is_admin,
-            "user_profile_pic":user_profile.profile_pictur
+            "user_profile_pic":user_profile.profile_pictur,
+            "account_number":user_profile.Account
 
             
 
@@ -143,7 +145,7 @@ class Refresh(Resource):
         access = create_access_token(identity = identity)
 
     
-        return jsonify({"access_token":access})
+        return jsonify({"access_token":access}),200
 
 
 
@@ -178,7 +180,7 @@ class UserProfiles(Resource):
 
 
 '''_____________W   A   L  L  E  T ____________________________'''
-@ns.route('/wallet')
+@wallet.route('/wallet')
 class Wallets(Resource):
     def get(self):
         all_wallets = Wallet.query.all()
@@ -189,6 +191,28 @@ class Wallets(Resource):
         return make_response(wallets_Schema.dump(all_wallets),200)
     
  
+@wallet.route('/wallet/<int:id>')
+class Wallets(Resource):
+    @wallet.expect(update_wallet)
+    def post(self,id):
+        data = request.get_json()
+     
+        wallet = Wallet.query.filter_by(user_prof_id=id).first()
+      
+
+        if not wallet:
+            return make_response(jsonify({"message":"wallet NOT found"}))
+        # update the attribute using Moringa for loop
+        wallet.balance +=data['amount']
+        db.session.commit()
+        print(wallet)
+        
+        # return make_response(wallets_Schema.dump(all_wallets),200)
+        return make_response(wallet_Schema.dump(wallet),200)
+
+    
+ 
+
 
 
 '''_____________T R A N S A C T I O N S____________________________'''

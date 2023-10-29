@@ -7,8 +7,9 @@ api.init_app(app)
 ns=Namespace('/')
 auth=Namespace('auth')
 api.add_namespace(auth)
-api.add_namespace(ns)
 
+wallet=Namespace('wallet')
+api.add_namespace(wallet)
 
 
 
@@ -50,16 +51,28 @@ class BeneficiarySchema(ma.SQLAlchemyAutoSchema):
 Beneficiary_Schema = BeneficiarySchema()
 Beneficiarys_Schema = BeneficiarySchema(many=True)
 
-
+'''__________________________W A L L E T____________________________________________'''
 
 class WalletSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Wallet
         ordered = True
 
- 
+    user_prof_id=ma.auto_field()
+    
 wallet_Schema = WalletSchema()
 wallets_Schema = WalletSchema(many=True)
+
+                #*********WALLET API.MODEL
+update_wallet =api.model('update_wallet',{
+
+    'amount':fields.Integer,
+  
+
+
+})
+
+
 
 
 class TreansactionSchema(ma.SQLAlchemyAutoSchema):
