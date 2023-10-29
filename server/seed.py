@@ -187,19 +187,19 @@ with app.app_context():
     '''user beneficiary  table        S E E D I N G _______________'''
     Beneficiary.query.delete()
 
-    transaction_list =Transaction.query.all()
-    beneficiary_list =[]
-    for_user_benef =[]
-    for transaction in  transaction_list:
-        user = User_Profile.query.filter_by(Account = transaction.receiver_account).first()
-        senders = User_Profile.query.filter_by(id = transaction.sender_id).first()
-        for_user_benef.append(senders)
+    # transaction_list =Transaction.query.all()
+    # beneficiary_list =[]
+    # for_user_benef =[]
+    # for transaction in  transaction_list:
+    #     user = User_Profile.query.filter_by(Account = transaction.receiver_account).first()
+    #     senders = User_Profile.query.filter_by(id = transaction.sender_id).first()
+    #     for_user_benef.append(senders)
         
-        beneficiary = Beneficiary(
-             user_profile_id=user.id
-        )
-        beneficiary_list.append(beneficiary)
-    db.session.add_all(beneficiary_list)
+    #     beneficiary = Beneficiary(
+    #          user_profile_id=user.id
+    #     )
+    #     beneficiary_list.append(beneficiary)
+    # db.session.add_all(beneficiary_list)
     db.session.commit()
         
     # print(for_user_benef)
@@ -216,15 +216,15 @@ with app.app_context():
 
     # Define your criteria to match user profiles and beneficiaries, and create relationships
     # For example, let's assume you want to associate beneficiaries with user profiles with the same first name.
-    i=0
-    for beneficiary in beneficiaries:
+    # i=0
+    # for beneficiary in beneficiaries:
      
-            # Create a relationship between the user profile and the beneficiary
-        id = [sender.id for sender in for_user_benef][i]
-        # print(id)
-        user_beneficiary = UserBeneficiary(sender_id=id, beneficiary_id=beneficiary.id)
-        i+=1
-        db.session.add(user_beneficiary)
+    #         # Create a relationship between the user profile and the beneficiary
+    #     id = [sender.id for sender in for_user_benef][i]
+    #     # print(id)
+    #     user_beneficiary = UserBeneficiary(sender_id=id, beneficiary_id=beneficiary.id)
+    #     i+=1
+    #     db.session.add(user_beneficiary)
 
     db.session.commit()
     
@@ -242,12 +242,12 @@ with app.app_context():
 
 
 #----------------beneficiary and user_profile relationship test----------------
-    benef1 = Beneficiary.query.all()[0]
-    user_profile1 = User_Profile.query.all()[0]
+    # benef1 = Beneficiary.query.all()[0]
+    # user_profile1 = User_Profile.query.all()[0]
     # print(benef1.user_profile)
     # print(user_profile1.beneficiaries)
 
 #--------------wallet and user profile relationship test
-    wallet = Wallet.query.all()[0]
-    print(wallet.user_profile)
-    print(user_profile1.wallet)
+    # wallet = Wallet.query.all()[0]
+    # print(wallet.user_profile)
+    # print(user_profile1.wallet)
