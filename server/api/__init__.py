@@ -26,7 +26,7 @@ ma = Marshmallow(app)
 secret_key = app.config['SECRET_KEY'] = 'a16e4b678a12af3ac6df0b0d9b40db31'
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///paylink.db"
 
-from api.models import db,User,User_Profile,Wallet,Transaction,Beneficiary,UserBeneficiary,Category
+from api.models import db,User,User_Profile,Wallet,Transaction,Beneficiary,UserBeneficiary,Category,WalletActivity
 
 
 migrate = Migrate(app, db)
