@@ -99,7 +99,7 @@ class WalletActivitySchema(ma.SQLAlchemyAutoSchema):
         model = WalletActivity
         ordered = True
 
-  
+    user_id=ma.auto_field()
     
 wallet_activity_Schema = WalletActivitySchema()
 wallet_activities_Schema = WalletActivitySchema(many=True)

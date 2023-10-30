@@ -189,7 +189,7 @@ class Wallets(Resource):
         all_wallets = Wallet.query.all()
 
         if not all_wallets:
-            return make_response(jsonify({"message":"no beneficiaries found"}))
+            return make_response(jsonify({"message":"no Wallets currently"}))
         
         return make_response(wallets_Schema.dump(all_wallets),200)
     
