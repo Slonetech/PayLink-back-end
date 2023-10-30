@@ -1,9 +1,9 @@
-from api import  make_response,jsonify,User_Profile,User,UserBeneficiary,Beneficiary,Wallet,Transaction,app,db,request
+from api import  make_response,jsonify,User_Profile,User,UserBeneficiary,Beneficiary,Wallet,Transaction,WalletActivity,app,db,request
 from api import  make_response,jsonify,Category,app,db,request
 from api.serialization import api,ns,auth,Resource
 from api.serialization import UserProfiles_Schema,UserProfile_Schema
 from api.serialization import wallet,wallets_Schema,wallet_Schema,update_wallet
-from api.serialization import transactions_Schema,create_transaction
+from api.serialization import transactions_Schema,create_transaction,wallet_activities_Schema,transactions
 from api.serialization import post_user,user_model_input,User_Schema
 
 # from api.serialization import user_schema,ns,auth,Resource,user_model_input,login_input_model,vendor_model_update
@@ -110,7 +110,10 @@ class Login(Resource):
         print('----------------------------------------')    
         if not user:
             return jsonify({"message": "User not found"})
-        
+        if  not user.authenticate(password):
+              return jsonify({"msg": "Bad username or password"})
+               
+
         user_profile = User_Profile.query.filter_by(user_id=user.id).first()
         # print(user_profile)
         # user_claims= UserObject( user_id=user.id ,user_name=user.user_name,user_role=user.roles)
@@ -216,7 +219,7 @@ class Wallets(Resource):
 
 
 '''_____________T R A N S A C T I O N S____________________________'''
-@ns.route('/transactions')
+@transactions.route('/transactions')
 class Transactions(Resource):
     def get(self):
         all_transactions = Transaction.query.all()
@@ -227,7 +230,7 @@ class Transactions(Resource):
         return make_response(transactions_Schema.dump(all_transactions),200)
     
     #_______C R E A T E _____________-T R A N S A C T I O N S_________________
-    @ns.expect(create_transaction)
+    @transactions.expect(create_transaction)
     def post(self):
         data = request.get_json()
         print(data)
@@ -237,7 +240,6 @@ class Transactions(Resource):
             receiver_account=data['receiver_account'],
             sender_id=data['sender_id'],
             category_id=Category.query.filter_by(type=data['category']).first().id,
-            status='Sent'
         )
         #---- we check if the receiver is a beneficiary of the sender
         #---------check if th erciver id is in 
@@ -249,18 +251,47 @@ class Transactions(Resource):
 
         db.session.add(transaction)
         db.session.commit()
-        print(sender.wallet.balance)
-        print('_________________________________________')
-        print(receiver.wallet.balance)
+        # print(sender.wallet.balance)
+        # print('_________________________________________')
+        # print(receiver.wallet.balance)
 
 
+        sender_wallet_activity = WalletActivity(
+            user_id =sender.id,
+            transaction_type ='sent',
+            amount=transaction.amount,
+            description = f'sent money to {receiver.first_name}',
+            transaction_id = transaction.id       
+              )
+        
 
-     
+        receiver_wallet_activity = WalletActivity(
+            user_id =receiver.id,
+            transaction_type ='received',
+            amount=transaction.amount,
+            description = f'received money from {sender.first_name}',
+            transaction_id = transaction.id        )
 
-
-
+        db.session.add_all([sender_wallet_activity,receiver_wallet_activity])
+        db.session.commit()
 
 
         return make_response(jsonify({"message":f"money from wallet to {receiver.first_name}"}))
         
 
+
+'''____________W A L L E T __________-A C T I V I T Y________________________'''
+
+@wallet.route('/wallet-Activity')
+class WalletsActivity(Resource):
+    def get(self):
+        wallet_activity = WalletActivity.query.all()
+
+        if not wallet_activity:
+            return make_response(jsonify({"message":"no beneficiaries found"}))
+        
+        return make_response(wallet_activities_Schema.dump(wallet_activity),200)
+    
+
+
+#cant see the wallet so i am writing this comment to push 

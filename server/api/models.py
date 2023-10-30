@@ -71,13 +71,10 @@ class User_Profile(db.Model):
     user = db.relationship('User', backref='users_profile',uselist=False)
 
     wallet = db.relationship('Wallet', back_populates='user_profile', cascade='all,delete-orphan',uselist=False)
-
-
-
     transactions = db.relationship('Transaction', backref='user_profile', lazy=True)
+    wallet_ctivities = db.relationship('WalletActivity', backref='user_profile', lazy=True)
 
-    # beneficiaries = db.relationship('Beneficiary', back_populates='user_profile', cascade ='all, delete-orphan')
-
+    
 
     # beneficiary relationship
     user_beneficiary_association = db.relationship('UserBeneficiary', back_populates='user_profile',cascade='all, delete-orphan')
@@ -140,25 +137,32 @@ class Transaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     amount=db.Column(db.Integer)
     receiver_account=db.Column(db.Integer)
-    status= db.Column(db.String)
     created = db.Column(db.DateTime, server_default=db.func.now())
 
-    sender_id = db.Column(db.Integer, db.ForeignKey('users_profile.id'),
-        nullable=False)
-    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'))
-    category = db.relationship('Category', backref='transaction',uselist=False)
+    sender_id = db.Column(db.Integer, db.ForeignKey('users_profile.id'), nullable=False)
 
+    wallet_ctivities = db.relationship('WalletActivity', backref='transaction', lazy=True)
 
     
+    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'))
+    category = db.relationship('Category', backref='transaction',uselist=False)
 
     def __repr__(self):
         return f'(id: {self.id}, amount: {self.amount},sender_id: {self.sender_id} ,receiver_account: {self.receiver_account}, status: {self.status} )'
 
 
 
+class WalletActivity(db.Model):
+    __tablename__ ='wallet_activities'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    transaction_type = db.Column(db.String(50))  # E.g., 'sent', 'received', 'top-up'
+    amount = db.Column(db.Float)
+    description = db.Column(db.String(255))
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
 
-
-
+    user_id = db.Column(db.Integer, db.ForeignKey('users_profile.id'), nullable=False)
+    transaction_id = db.Column(db.Integer, db.ForeignKey('transactions.id'), nullable=False)
 
 
 

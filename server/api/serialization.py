@@ -1,4 +1,5 @@
-from api import  make_response,jsonify,User,app,ma,User_Profile,UserBeneficiary,Beneficiary,Wallet,Transaction
+from api import  make_response,jsonify,User,app,ma,User_Profile,UserBeneficiary,Beneficiary
+from api import  Wallet,Transaction,WalletActivity
 
 from flask_restx import Api,Resource,Namespace,fields
 
@@ -12,6 +13,9 @@ api.add_namespace(ns)
 
 auth=Namespace('auth')
 api.add_namespace(auth)
+
+transactions=Namespace('transaction')
+api.add_namespace(transactions)
 
 wallet=Namespace('wallet')
 api.add_namespace(wallet)
@@ -89,6 +93,16 @@ class TreansactionSchema(ma.SQLAlchemyAutoSchema):
 transaction_Schema = TreansactionSchema()
 transactions_Schema = TreansactionSchema(many=True)
 
+
+class WalletActivitySchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = WalletActivity
+        ordered = True
+
+  
+    
+wallet_activity_Schema = WalletActivitySchema()
+wallet_activities_Schema = WalletActivitySchema(many=True)
 
 
 '''_________A P I _________M O D E L S___________________'''
