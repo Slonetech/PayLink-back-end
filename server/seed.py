@@ -177,7 +177,7 @@ with app.app_context():
 
 
 
-
+    '''loop thru the transactoions'''
 
 
 
@@ -248,11 +248,11 @@ with app.app_context():
     # print(user_profile1.beneficiaries)
 
 #--------------wallet and user profile relationship test
-    wallet = Wallet.query.all()[0]
-    user_profile1 = User_Profile.query.all()[0]
+    # wallet = Wallet.query.all()[0]
+    # user_profile1 = User_Profile.query.all()[0]
 
-    print(wallet.user_profile)#--  first_name is osmith
-    print(user_profile1.wallet)#-- balance of 41010
+    # print(wallet.user_profile)#--  first_name is osmith
+    # print(user_profile1.wallet)#-- balance of 41010
 
 # (id: 1, first_name: osmith,last_name: qhurst, address: 1000 Samantha Loaf New Jodi, AL 63102,  phone: 8577326204 )
 # (id: 1, balance: 41010,user_id: 1  )

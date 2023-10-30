@@ -149,12 +149,20 @@ class Transaction(db.Model):
     category = db.relationship('Category', backref='transaction',uselist=False)
 
 
- 
-
-
+    
 
     def __repr__(self):
         return f'(id: {self.id}, amount: {self.amount},sender_id: {self.sender_id} ,receiver_account: {self.receiver_account}, status: {self.status} )'
+
+
+
+
+
+
+
+
+
+
 
 
 class Category(db.Model):

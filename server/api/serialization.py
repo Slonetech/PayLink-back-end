@@ -4,7 +4,12 @@ from flask_restx import Api,Resource,Namespace,fields
 
 api = Api()
 api.init_app(app)
+
+
 ns=Namespace('/')
+api.add_namespace(ns)
+
+
 auth=Namespace('auth')
 api.add_namespace(auth)
 
