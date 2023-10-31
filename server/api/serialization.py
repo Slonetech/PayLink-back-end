@@ -1,4 +1,4 @@
-from api import  make_response,jsonify,User,app,ma,User_Profile,UserBeneficiary,Beneficiary
+from api import  make_response,jsonify,User,app,ma,User_Profile,UserBeneficiary,Beneficiary,Category
 from api import  Wallet,Transaction,WalletActivity
 
 from flask_restx import Api,Resource,Namespace,fields
@@ -89,10 +89,26 @@ class TreansactionSchema(ma.SQLAlchemyAutoSchema):
         model = Transaction
         ordered = True
     sender_id=ma.auto_field()
+    # category=ma.auto_field()
+    category = ma.Nested("CategorySchema")
+
+
  
 transaction_Schema = TreansactionSchema()
 transactions_Schema = TreansactionSchema(many=True)
 
+
+
+class CategorySchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Category
+        ordered = True
+   
+
+
+ 
+category_Schema = CategorySchema()
+categories_Schema = CategorySchema(many=True)
 
 class WalletActivitySchema(ma.SQLAlchemyAutoSchema):
     class Meta:
