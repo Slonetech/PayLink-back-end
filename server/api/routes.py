@@ -321,7 +321,7 @@ class Transactions(Resource):
         # print(receiver.wallet.balance)
 
         '''------P O P U L A T E --------W A L L E T-------------A C T I V I T Y       TABLE'''
-        
+
         sender_wallet_activity = WalletActivity(
             user_id =sender.id,
             transaction_type ='sent',
@@ -362,4 +362,3 @@ class WalletsActivity(Resource):
     
 
 
-#cant see the wallet so i am writing this comment to push 
