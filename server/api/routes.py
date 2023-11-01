@@ -1,4 +1,4 @@
-from api import  make_response,jsonify,User_Profile,User,UserBeneficiary,Beneficiary,Wallet,Transaction,WalletActivity,app,db,request
+from api import  make_response,jsonify,User_Profile,User,Wallet,Transaction,WalletActivity,app,db,request
 from api import  make_response,jsonify,Category,app,db,request
 from api.serialization import api,ns,auth,Resource
 from api.serialization import UserProfiles_Schema,UserProfile_Schema

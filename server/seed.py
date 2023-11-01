@@ -1,4 +1,4 @@
-from api import app,db,User,User_Profile,Wallet,Transaction,Beneficiary,UserBeneficiary,Category,WalletActivity
+from api import app,db,User,User_Profile,Wallet,Transaction,Category,WalletActivity,Beneficiary
 from faker import Faker
 import random 
 from random import randint, choice as rc
@@ -205,25 +205,29 @@ with app.app_context():
     db.session.flush()
         
 
+    '''____________     __________A C T I V I T Y ___________________'''
+
 
 
 
     '''user beneficiary  table        S E E D I N G _______________'''
     Beneficiary.query.delete()
 
-    # transaction_list =Transaction.query.all()
-    # beneficiary_list =[]
-    # for_user_benef =[]
-    # for transaction in  transaction_list:
-    #     user = User_Profile.query.filter_by(Account = transaction.receiver_account).first()
-    #     senders = User_Profile.query.filter_by(id = transaction.sender_id).first()
-    #     for_user_benef.append(senders)
+    transaction_list =Transaction.query.all()
+    beneficiary_list =[]
+    for_user_benef =[]
+    for transaction in  transaction_list:
+        user = User_Profile.query.filter_by(Account = transaction.receiver_account).first()
+        # senders = User_Profile.query.filter_by(id = transaction.sender_id).first()
+        # for_user_benef.append(senders)
         
-    #     beneficiary = Beneficiary(
-    #          user_profile_id=user.id
-    #     )
-    #     beneficiary_list.append(beneficiary)
-    # db.session.add_all(beneficiary_list)
+        beneficiary = Beneficiary(
+             name=user.first_name,
+             Account = user.Account
+
+         )
+        beneficiary_list.append(beneficiary)
+    db.session.add_all(beneficiary_list)
     db.session.commit()
         
     # print(for_user_benef)
@@ -233,10 +237,10 @@ with app.app_context():
        
 
     '''U S E R ________________B E N F I C I A R Y _________S E E D I N G'''
-    UserBeneficiary.query.delete()
+    # UserBeneficiary.query.delete()
 
 
-    beneficiaries = Beneficiary.query.all()
+    # beneficiaries = Beneficiary.query.all()
 
     # Define your criteria to match user profiles and beneficiaries, and create relationships
     # For example, let's assume you want to associate beneficiaries with user profiles with the same first name.
@@ -250,7 +254,7 @@ with app.app_context():
     #     i+=1
     #     db.session.add(user_beneficiary)
 
-    db.session.commit()
+    # db.session.commit()
     
     
 

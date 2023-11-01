@@ -77,8 +77,8 @@ class User_Profile(db.Model):
     
 
     # beneficiary relationship
-    user_beneficiary_association = db.relationship('UserBeneficiary', back_populates='user_profile',cascade='all, delete-orphan')
-    beneficiaries = association_proxy('user_beneficiary_association','beneficiary')
+    # user_beneficiary_association = db.relationship('UserBeneficiary', back_populates='user_profile',cascade='all, delete-orphan')
+    # beneficiaries = association_proxy('user_beneficiary_association','beneficiary')
 
 
  
@@ -91,18 +91,18 @@ class User_Profile(db.Model):
 
 
 class UserBeneficiary(db.Model):
-    __tablename__='user_beneficiaries'
-
+    __tablename__='user_beneficiaries'  
+    
     
     id = db.Column(db.Integer, primary_key=True)    
-    sender_id = db.Column('sender_id',db.Integer, db.ForeignKey("users_profile.id"))
-    beneficiary_id = db.Column('beneficiary_id',db.Integer, db.ForeignKey("beneficiaries.id"))
+    # sender_id = db.Column('sender_id',db.Integer, db.ForeignKey("users_profile.id"))
+    # beneficiary_id = db.Column('beneficiary_id',db.Integer, db.ForeignKey("beneficiaries.id"))
 
-    user_profile = db.relationship('User_Profile', back_populates='user_beneficiary_association')
-    beneficiary = db.relationship('Beneficiary', back_populates='user_beneficiary_association')
+#     # user_profile = db.relationship('User_Profile', back_populates='user_beneficiary_association')
+#     # beneficiary = db.relationship('Beneficiary', back_populates='user_beneficiary_association')
 
-    def __repr__(self):
-        return f'(id: {self.id}, sender_id: {self.sender_id},beneficiary_id: {self.beneficiary_id} )'
+#     # def __repr__(self):
+#     #     return f'(id: {self.id}, sender_id: {self.sender_id},beneficiary_id: {self.beneficiary_id} )'
 
 
 
@@ -111,21 +111,26 @@ class UserBeneficiary(db.Model):
 
 class Beneficiary(db.Model):
     __tablename__ ='beneficiaries'
+    pass
 
     id = db.Column(db.Integer, primary_key=True)
-    user_profile_id = db.Column('user_profile_id',db.Integer, db.ForeignKey("users_profile.id"))
-
-    user_profile = db.relationship('User_Profile',back_populates='beneficiaries')
-
+    name=db.Column(db.String)
+    Account=db.Column(db.String)
 
 
+    # user_profile_id = db.Column('user_profile_id',db.Integer, db.ForeignKey("users_profile.id"))
 
-    # beneficiary relationship
-    user_beneficiary_association = db.relationship('UserBeneficiary', back_populates='beneficiary',cascade='all, delete-orphan')
-    user_profile = association_proxy('user_beneficiary_association','user_profile')
+    # user_profile = db.relationship('User_Profile',back_populates='beneficiaries')
+
+
+
+
+    # # beneficiary relationship
+    # user_beneficiary_association = db.relationship('UserBeneficiary', back_populates='beneficiary',cascade='all, delete-orphan')
+    # user_profile = association_proxy('user_beneficiary_association','user_profile')
 
     def __repr__(self):
-        return f'(id: {self.id}, user_profile_id: {self.user_profile_id} )'
+        return f'(id: {self.id}, benef_name: {self.name}, benef_Account: {self.Account}  )'
 
 
 
