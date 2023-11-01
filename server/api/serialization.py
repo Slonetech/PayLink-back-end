@@ -72,7 +72,7 @@ class WalletSchema(ma.SQLAlchemyAutoSchema):
 wallet_Schema = WalletSchema()
 wallets_Schema = WalletSchema(many=True)
 
-                #*********WALLET API.MODEL
+                #*********WALLET API.MODEL*************************************
 update_wallet =api.model('update_wallet',{
 
     'amount':fields.Integer,
@@ -80,6 +80,15 @@ update_wallet =api.model('update_wallet',{
 
 
 })
+create_wallet =api.model('create_wallet',{
+# i will  set the amoun to 0 since the is a new wallt the user created and status to Active
+    'user_prof_id':fields.Integer,
+    'type':fields.String,
+  
+
+
+})
+
 
 
 
