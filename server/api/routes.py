@@ -293,8 +293,27 @@ class Transactions(Resource):
         #---------check if th erciver id is in 
         #--------------move the money 
         sender = User_Profile.query.filter_by(id = data['sender_id']).first()
+
+        ''' ---------check if amount is greater than what is in their wallet-----------------'''
+
+        if int(data['amount']) > sender.wallet.balance:
+            remainder =  int(data['amount']) - sender.wallet.balance            
+            return make_response({"message":f"you dont have {int(data['amount'])} take a loan of {remainder}?" })
+        
+        '''---------if else, proceed with the payment ------------------'''
+
         sender.wallet.balance -= int(data['amount'])
         receiver.wallet.balance += int(data['amount'])
+
+
+        '''--------Charge the sender the transaction feees and deduct form the balance------------------'''
+        print(sender.wallet.balance)
+        deduction_amount = sender.wallet.transaction_fees(data['amount'])
+        sender.wallet.balance -= deduction_amount
+        print(deduction_amount)
+        print(sender.wallet.balance)
+        
+
 
 
         '''----------check if the RECEIVER is a beneficiary of the sender-------------------'''

@@ -66,7 +66,7 @@ class WalletSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Wallet
         ordered = True
-
+    balance = fields.Float()
     user_prof_id=ma.auto_field()
     
 wallet_Schema = WalletSchema()

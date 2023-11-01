@@ -208,6 +208,37 @@ class Wallet(db.Model):
 
  
 
+    
+    def transaction_fees(self,amount):
+        deductionA= 0
+        deductionB= 0.01
+        deductionC= 0.024
+        deductionD= 0.0028
+        deductionE= 0.003
+        deductionF =0.004
+        amount =float(amount)
+        deduction =0
+        if 0<=amount<=5000:
+            deduction = amount * deductionA
+        if 5001<=amount<=15000:
+            deduction = amount * deductionB
+        if 1501<=amount<=30000:
+            deduction = amount * deductionC
+        if 30001<=amount<=55000:
+            deduction = amount * deductionD
+        if 55001<=amount<=100000:
+            deduction = amount * deductionE
+    
+        if 50000<=amount<=100000:
+            deduction = amount * deductionB
+        else:
+            deduction = amount * deductionF
+            
+        
+        
+    
+        return deduction
+
 
     def save(self):
         db.session.add(self)
