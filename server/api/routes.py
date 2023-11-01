@@ -1,5 +1,5 @@
-from api import  make_response,jsonify,User_Profile,User,UserBeneficiary,Beneficiary,Wallet,Transaction,WalletActivity,app,db,request
-from api import  make_response,jsonify,Category,app,db,request
+from api import  make_response,jsonify,User_Profile,User,Wallet,Transaction,WalletActivity,app,db,request
+from api import  Beneficiary,UserBeneficiary,Category,app,db,request
 from api.serialization import api,ns,auth,Resource
 from api.serialization import UserProfiles_Schema,UserProfile_Schema
 from api.serialization import wallet,wallets_Schema,wallet_Schema,update_wallet
@@ -261,7 +261,7 @@ class Transactions(Resource):
     @transactions.expect(create_transaction)
     def post(self):
         data = request.get_json()
-        print(data)
+        # print(data)
         #-------------------------post the transaction
         transaction = Transaction(
             amount=data['amount'],
@@ -269,16 +269,45 @@ class Transactions(Resource):
             sender_id=data['sender_id'],
             category_id=Category.query.filter_by(type=data['category']).first().id,
         )
+
+        transaction.save()
+
+
+        '''-----------U P D A T E ------------------------W A L L E T --------------B A L A N C E'''
+
         #---- we check if the receiver is a beneficiary of the sender
         #---------check if th erciver id is in 
         #--------------move the money 
         sender = User_Profile.query.filter_by(id = data['sender_id']).first()
-        sender.wallet.balance -= data['amount']
-        receiver = User_Profile.query.filter_by(Account = data['receiver_account']).first()
-        receiver.wallet.balance += data['amount']
+        sender.wallet.balance -= int(data['amount'])
+        receiver = User_Profile.query.filter_by(Account = data['account']).first()
+        receiver.wallet.balance += int(data['amount'])
 
-        db.session.add(transaction)
-        db.session.commit()
+
+        '''----------check if the RECEIVER is a beneficiary of the sendree-------------------'''
+        is_beneficiary = Beneficiary.query.filter_by(Account = receiver.Account).first()
+        if not is_beneficiary:
+            beneficiary = Beneficiary(
+            name=receiver.first_name,
+            Account = receiver.Account
+
+         )
+            beneficiary.save()
+            # sender.beneficiaries.append(beneficiary)
+            user_beneficiary = UserBeneficiary(
+             sender_id=sender.id,
+             beneficiary_id = beneficiary.id
+
+         )
+            user_beneficiary.save()
+
+        print(is_beneficiary)
+
+        
+        print(sender.beneficiaries)
+
+
+
         # print(sender.wallet.balance)
         # print('_________________________________________')
         # print(receiver.wallet.balance)
@@ -304,7 +333,9 @@ class Transactions(Resource):
         db.session.commit()
 
 
-        return make_response(jsonify({"message":f"money from wallet to {receiver.first_name}"}))
+        return make_response(jsonify(
+            {"message":f"money from wallet to {receiver.first_name}"},
+            ))
         
 
 
