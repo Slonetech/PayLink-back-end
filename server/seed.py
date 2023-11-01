@@ -70,12 +70,18 @@ with app.app_context():
     Wallet.query.delete()
 
     wallet_list = []
+    i=0
     for user in users_profile_list:
         wallet = Wallet(
                     balance=random.randint(1000, 50000),
-                    user_prof_id= user.id
+                    user_prof_id= user.id,
+                    type=rc(['Savings','Invesment', 'Emergencies','Spending']),
+                    status = rc(['Active',"Inactive"]),
+                    Account =   user.Account         
+
                     
                 )
+        
         wallet_list.append(wallet)
 
     db.session.add_all(wallet_list)

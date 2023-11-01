@@ -182,6 +182,11 @@ class Wallet(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)   
     balance =  db.Column(db.Integer)
+    type=db.Column(db.String)
+    status=db.Column(db.String)
+    Account=db.Column(db.String)
+    
+
     joined = db.Column(db.DateTime, server_default=db.func.now())
 
 
@@ -189,6 +194,12 @@ class Wallet(db.Model):
     user_profile = db.relationship('User_Profile', back_populates='wallet', )
 
  
+
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
     def __repr__(self):
         return f'(id: {self.id}, balance: {self.balance},user_id: {self.user_prof_id}  )'
 

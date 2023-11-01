@@ -5,7 +5,7 @@ from api.serialization import UserProfiles_Schema,UserProfile_Schema
 from api.serialization import wallet,wallets_Schema,wallet_Schema,update_wallet
 from api.serialization import transactions_Schema,create_transaction,wallet_activities_Schema,transactions
 from api.serialization import post_user,user_model_input,User_Schema
-
+from api.serialization import create_wallet
 # from api.serialization import user_schema,ns,auth,Resource,user_model_input,login_input_model,vendor_model_update
 # from api.serialization import vendor_model_input,post_user
 import uuid
@@ -193,6 +193,26 @@ class Wallets(Resource):
         
         return make_response(wallets_Schema.dump(all_wallets),200)
     
+
+
+    '''---------------------------P O S T ------------W A L  L E T----------------'''
+    @wallet.expect(create_wallet)
+    def post(self):
+        data = request.get_json()
+        user_prof_id = data['user_prof_id']
+        type = data['type']
+        new_wallet = Wallet(
+            balance=0,
+            user_prof_id=user_prof_id,
+            type =type,
+            status = 'Active'
+
+        )
+        new_wallet.save()
+        return make_response(wallet_Schema.dump(new_wallet),200)
+
+    
+    
  
 @wallet.route('/wallet/<int:id>')
 class Wallets(Resource):
@@ -201,19 +221,17 @@ class Wallets(Resource):
         data = request.get_json()
      
         wallet = Wallet.query.filter_by(user_prof_id=id).first()
-      
-
         if not wallet:
             return make_response(jsonify({"message":"wallet NOT found"}))
-        # update the attribute using Moringa for loop
         wallet.balance +=data['amount']
         db.session.commit()
         print(wallet)
         
         # return make_response(wallets_Schema.dump(all_wallets),200)
         return make_response(wallet_Schema.dump(wallet),200)
-
     
+
+   
  
 
 
