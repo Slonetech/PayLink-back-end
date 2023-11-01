@@ -101,8 +101,12 @@ class UserBeneficiary(db.Model):
     user = db.relationship('User_Profile', back_populates='user_beneficiary_association')
     beneficiary = db.relationship('Beneficiary', back_populates='user_beneficiary_association')
 
-#     # def __repr__(self):
-#     #     return f'(id: {self.id}, sender_id: {self.sender_id},beneficiary_id: {self.beneficiary_id} )'
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+    # def __repr__(self):
+    #     return f'(id: {self.id}, sender_id: {self.sender_id},beneficiary_id: {self.beneficiary_id} )'
 
 
 
@@ -118,16 +122,15 @@ class Beneficiary(db.Model):
     Account=db.Column(db.String)
 
 
-    # user_profile_id = db.Column('user_profile_id',db.Integer, db.ForeignKey("users_profile.id"))
-
-    # user_profile = db.relationship('User_Profile',back_populates='beneficiaries')
-
-
 
 
     # # beneficiary relationship
     user_beneficiary_association = db.relationship('UserBeneficiary', back_populates='beneficiary')
     users = association_proxy('user_beneficiary_association','user')
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
 
     def __repr__(self):
         return f'(id: {self.id}, benef_name: {self.name}, benef_Account: {self.Account}  )'
@@ -151,6 +154,11 @@ class Transaction(db.Model):
     
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'))
     category = db.relationship('Category', backref='transaction',uselist=False)
+
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
 
     def __repr__(self):
         return f'(id: {self.id}, amount: {self.amount},sender_id: {self.sender_id} ,receiver_account: {self.receiver_account}, status: {self.status} )'

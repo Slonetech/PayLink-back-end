@@ -264,19 +264,39 @@ with app.app_context():
     # print(user1.user)
 
     '''____USER_PROFILE ___TRANSACTIONS______RELATIONSHIP        T E S T I N G _______________'''
-    user_profile1 = User_Profile.query.all()[4]
+    user_profile1 = User_Profile.query.all()[3]
     transaction= Transaction.query.all()[4]
     # print(len(transaction.sender_id))
-    print(transaction.sender_id)
-    # print(user_profile1.transactions)
+    # print(transaction.sender_id)
+    print(user_profile1)
 
-
+    print('------------------------------------')
 #----------------beneficiary and user_profile relationship test----------------
     benef1 = Beneficiary.query.all()[1]
     user1 = User_Profile.query.all()[0]
     # print(benef1.users)
-    print(len(user1.beneficiaries))
-    print(user1.beneficiaries)
+    # print(len(user1.beneficiaries))
+    # print(user1.beneficiaries)
+    # for user in user1.beneficiaries:
+    #     userOb = User_Profile.query.filter_by(id = user.id).first()
+    #     if user_profile1.id == userOb.id:
+    #         print(user_profile1.first_name)
+
+    # for user in User_Profile.query.filter_by(id = user.id).first().beneficiaries:
+    #     userOb = 
+    #     if user_profile1.id == userOb.id:
+    #         print(user_profile1.first_name)
+    # if user_profile1 in user1.beneficiaries:
+    #     print('yess they doooo')
+    '''delete a benficiary'''
+    benef2 = Beneficiary.query.filter_by(name='Linda').first()
+    print(benef2)
+    db.session.delete(benef2)
+    db.session.commit()
+    
+     
+
+
 
 #--------------wallet and user profile relationship test
     # wallet = Wallet.query.all()[0]
