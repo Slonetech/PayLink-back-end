@@ -270,7 +270,7 @@ class Transactions(Resource):
             category_id=Category.query.filter_by(type=data['category']).first().id,
         )
 
-        # transaction.save()
+        transaction.save()
 
 
         '''-----------U P D A T E ------------------------W A L L E T --------------B A L A N C E'''
@@ -279,8 +279,10 @@ class Transactions(Resource):
         #---------check if th erciver id is in 
         #--------------move the money 
         sender = User_Profile.query.filter_by(id = data['sender_id']).first()
-        # sender.wallet.balance -= data['amount']
+        sender.wallet.balance -= int(data['amount'])
         receiver = User_Profile.query.filter_by(Account = data['account']).first()
+        receiver.wallet.balance += int(data['amount'])
+
 
         '''----------check if the RECEIVER is a beneficiary of the sendree-------------------'''
         is_beneficiary = Beneficiary.query.filter_by(Account = receiver.Account).first()
@@ -305,36 +307,35 @@ class Transactions(Resource):
         print(sender.beneficiaries)
 
 
-        # receiver.wallet.balance += data['amount']
 
         # print(sender.wallet.balance)
         # print('_________________________________________')
         # print(receiver.wallet.balance)
 
 
-        # sender_wallet_activity = WalletActivity(
-        #     user_id =sender.id,
-        #     transaction_type ='sent',
-        #     amount=transaction.amount,
-        #     description = f'sent money to {receiver.first_name}',
-        #     transaction_id = transaction.id       
-        #       )
+        sender_wallet_activity = WalletActivity(
+            user_id =sender.id,
+            transaction_type ='sent',
+            amount=transaction.amount,
+            description = f'sent money to {receiver.first_name}',
+            transaction_id = transaction.id       
+              )
         
 
-        # receiver_wallet_activity = WalletActivity(
-        #     user_id =receiver.id,
-        #     transaction_type ='received',
-        #     amount=transaction.amount,
-        #     description = f'received money from {sender.first_name}',
-        #     transaction_id = transaction.id        )
+        receiver_wallet_activity = WalletActivity(
+            user_id =receiver.id,
+            transaction_type ='received',
+            amount=transaction.amount,
+            description = f'received money from {sender.first_name}',
+            transaction_id = transaction.id        )
 
-        # db.session.add_all([sender_wallet_activity,receiver_wallet_activity])
-        # db.session.commit()
+        db.session.add_all([sender_wallet_activity,receiver_wallet_activity])
+        db.session.commit()
 
 
-        # return make_response(jsonify(
-        #     {"message":f"money from wallet to {receiver.first_name}"}
-        #     ))
+        return make_response(jsonify(
+            {"message":f"money from wallet to {receiver.first_name}"},
+            ))
         
 
 
