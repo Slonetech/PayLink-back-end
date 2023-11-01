@@ -269,9 +269,23 @@ class Transactions(Resource):
             sender_id=data['sender_id'],
             category_id=Category.query.filter_by(type=data['category']).first().id,
         )
-
         transaction.save()
 
+
+
+
+        '''----------check if-----Beneficary/Receiver-------exists------in the database-------------------'''
+
+        receiver = User_Profile.query.filter_by(Account = data['account']).first()
+        if not receiver:
+                return make_response(jsonify(
+            {"message":f"Account does not exist "},
+            ))
+        
+
+
+
+        
 
         '''-----------U P D A T E ------------------------W A L L E T --------------B A L A N C E'''
 
@@ -280,11 +294,11 @@ class Transactions(Resource):
         #--------------move the money 
         sender = User_Profile.query.filter_by(id = data['sender_id']).first()
         sender.wallet.balance -= int(data['amount'])
-        receiver = User_Profile.query.filter_by(Account = data['account']).first()
         receiver.wallet.balance += int(data['amount'])
 
 
-        '''----------check if the RECEIVER is a beneficiary of the sendree-------------------'''
+        '''----------check if the RECEIVER is a beneficiary of the sender-------------------'''
+
         is_beneficiary = Beneficiary.query.filter_by(Account = receiver.Account).first()
         if not is_beneficiary:
             beneficiary = Beneficiary(
@@ -301,17 +315,12 @@ class Transactions(Resource):
          )
             user_beneficiary.save()
 
-        print(is_beneficiary)
-
-        
-        print(sender.beneficiaries)
-
-
-
+   
         # print(sender.wallet.balance)
         # print('_________________________________________')
         # print(receiver.wallet.balance)
 
+        '''------P O P U L A T E --------W A L L E T-------------A C T I V I T Y       TABLE'''
 
         sender_wallet_activity = WalletActivity(
             user_id =sender.id,
@@ -353,4 +362,3 @@ class WalletsActivity(Resource):
     
 
 
-#cant see the wallet so i am writing this comment to push 
