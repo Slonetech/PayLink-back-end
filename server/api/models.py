@@ -194,7 +194,7 @@ class Wallet(db.Model):
     __tablename__ ='wallets'
 
     id = db.Column(db.Integer, primary_key=True)   
-    balance =  db.Column(db.Integer)
+    balance =  db.Column(db.Numeric(10,2))
     type=db.Column(db.String)
     status=db.Column(db.String)
     Account=db.Column(db.String)
@@ -216,7 +216,7 @@ class Wallet(db.Model):
         deductionD= 0.0028
         deductionE= 0.003
         deductionF =0.004
-        amount =float(amount)
+        amount =int(amount)
         deduction =0
         if 0<=amount<=5000:
             deduction = amount * deductionA

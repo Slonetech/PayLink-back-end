@@ -286,6 +286,7 @@ class Transactions(Resource):
 
 
         
+        from decimal import Decimal
 
         '''-----------U P D A T E ------------------------W A L L E T --------------B A L A N C E'''
 
@@ -309,7 +310,7 @@ class Transactions(Resource):
         '''--------Charge the sender the transaction feees and deduct form the balance------------------'''
         print(sender.wallet.balance)
         deduction_amount = sender.wallet.transaction_fees(data['amount'])
-        sender.wallet.balance -= deduction_amount
+        sender.wallet.balance -= Decimal(deduction_amount)
         print(deduction_amount)
         print(sender.wallet.balance)
         
