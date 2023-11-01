@@ -27,6 +27,7 @@ jwt = JWTManager(app)
 
 @auth.route('/signup')
 class Signup (Resource):
+
     @auth.expect(user_model_input)
     # @auth.marshal_with(post_user)
     def post(self):
@@ -46,15 +47,15 @@ class Signup (Resource):
 
         )
 
-        
-
-       
 
         db.session.add(new_user)
         db.session.commit()
+
+
         
+        '''------------populat user_profile table-------------------------'''
+
         code =['+254','+256','+252','+251']
-       
         user_profile = User_Profile(            
         first_name=data['first_name'],
         last_name = data['last_name'],
@@ -69,12 +70,21 @@ class Signup (Resource):
         db.session.add(user_profile)
         db.session.commit()
 
-        #---------CREATE A WALLET FOR THE USER
-        new_wallet = Wallet(
-            balance=0,
-            user_prof_id=user_profile.id
 
+
+
+        '''---------CREATE A WALLET FOR THE USER-----------------------------'''
+        new_wallet = Wallet(
+            balance=50000,
+            user_prof_id=user_profile.id,
+            type='Main',
+            status = 'Active',
+            Account =user_profile.Account
         )
+       
+    
+
+
         db.session.add(new_wallet)
         db.session.commit()
         # print('-----------------------------------------------')
@@ -208,7 +218,7 @@ class Wallets(Resource):
             status = 'Active'
 
         )
-        new_wallet.save()
+        # new_wallet.save()
         return make_response(wallet_Schema.dump(new_wallet),200)
 
     
@@ -255,7 +265,7 @@ class Transactions(Resource):
         #-------------------------post the transaction
         transaction = Transaction(
             amount=data['amount'],
-            receiver_account=data['receiver_account'],
+            receiver_account=data['account'],
             sender_id=data['sender_id'],
             category_id=Category.query.filter_by(type=data['category']).first().id,
         )

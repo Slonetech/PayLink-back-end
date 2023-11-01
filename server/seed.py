@@ -75,7 +75,7 @@ with app.app_context():
         wallet = Wallet(
                     balance=random.randint(1000, 50000),
                     user_prof_id= user.id,
-                    type=rc(['Savings','Invesment', 'Emergencies','Spending']),
+                    type=rc(['Savings','Invesment', 'Emergencies','Main']),
                     status = rc(['Active',"Inactive"]),
                     Account =   user.Account         
 
