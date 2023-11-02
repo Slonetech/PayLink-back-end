@@ -166,8 +166,9 @@ class Transaction(db.Model):
     
     
 
-
-    def transaction_fees(self,amount):
+    @classmethod
+    def transaction_fees(cls,amount):
+        amount = int(amount)
         deductionA = 0.0017
         deductionB = 0.002
         deductionC = 0.0024
