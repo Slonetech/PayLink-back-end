@@ -80,7 +80,9 @@ class User_Profile(db.Model):
     user_beneficiary_association = db.relationship('UserBeneficiary', back_populates='user',cascade='all, delete-orphan')
     beneficiaries = association_proxy('user_beneficiary_association','beneficiary')
 
-
+    def full_name(self):
+        full_name = self.first_name + ' ' + self.last_name
+        return full_name
  
 
     def __repr__(self):
@@ -144,8 +146,9 @@ class Transaction(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     transaction_id =db.Column(db.String)
+    sender_name =db.Column(db.String)
+    receiver_name =db.Column(db.String)
     transaction_fee =  db.Column(db.Numeric(10,2))
-
     amount=db.Column(db.Integer)
     receiver_account=db.Column(db.Integer)
     created = db.Column(db.DateTime, server_default=db.func.now())
@@ -192,8 +195,8 @@ class Transaction(db.Model):
 
         return deduction
     
-
-    def generate_unique_id(self):
+    @classmethod
+    def generate_unique_id(cls):
         length = 14
         characters = string.ascii_uppercase + string.digits
         unique_id = ''.join(random.choice(characters) for _ in range(length))
