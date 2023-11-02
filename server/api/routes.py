@@ -12,6 +12,7 @@ import uuid
 import string
 import random 
 from random import randint, choice as rc
+from decimal import Decimal
 
 
 import jwt
@@ -169,25 +170,8 @@ class UserProfiles(Resource):
         all_users = User_Profile.query.all()
 
         if not all_users:
-            return make_response(jsonify({"message":"no Users found"}))
-        
-        # get each user's beneficiaries or the receivers
-        beneficiaries_list=[user.beneficiaries for user in all_users  if len(user.beneficiaries) > 0]
-        receiver_list =[]
-        # loop thru the nested list
-        for benef in beneficiaries_list:
-            # loop thru the tupple (id: 6, user_profile_id: 3 )
-            for b in benef:
-                receiver_list.append(b.user_profile_id)
-
-        # loop thru the list of beneficiary id's and get their user information
-        receiver_object_list =[]
-        for receiver_id in receiver_list:
-            receiver=User_Profile.query.filter_by(id = receiver_id).first()
-            receiver_object_list.append(receiver)
-        print(receiver_object_list)
-                
-        
+            return make_response(jsonify({"message":"no Users found"}))   
+             
         return make_response(UserProfiles_Schema.dump(all_users),200)
 
 
@@ -270,53 +254,32 @@ class Transactions(Resource):
             category_id=Category.query.filter_by(type=data['category']).first().id,
         )
         transaction.save()
-
-
-
-
         '''----------check if-----Beneficary/Receiver-------exists------in the database-------------------'''
-
         receiver = User_Profile.query.filter_by(Account = data['account']).first()
         if not receiver:
                 return make_response(jsonify(
             {"message":f"Account does not exist "},
             ))
-        
-
-
-
-        
-        from decimal import Decimal
-
         '''-----------U P D A T E ------------------------W A L L E T --------------B A L A N C E'''
 
         #---- we check if the receiver is a beneficiary of the sender
         #---------check if th erciver id is in 
         #--------------move the money 
         sender = User_Profile.query.filter_by(id = data['sender_id']).first()
-
         ''' ---------check if amount is greater than what is in their wallet-----------------'''
-
         if int(data['amount']) > sender.wallet.balance:
             remainder =  int(data['amount']) - sender.wallet.balance            
             return make_response({"message":f"you dont have {int(data['amount'])} take a loan of {remainder}?" })
-        
+    
         '''---------if else, proceed with the payment ------------------'''
-
         sender.wallet.balance -= int(data['amount'])
         receiver.wallet.balance += int(data['amount'])
-
-
         '''--------Charge the sender the transaction feees and deduct form the balance------------------'''
         print(sender.wallet.balance)
         deduction_amount = sender.wallet.transaction_fees(data['amount'])
         sender.wallet.balance -= Decimal(deduction_amount)
         print(deduction_amount)
         print(sender.wallet.balance)
-        
-
-
-
         '''----------check if the RECEIVER is a beneficiary of the sender-------------------'''
 
         is_beneficiary = Beneficiary.query.filter_by(Account = receiver.Account).first()
@@ -324,33 +287,25 @@ class Transactions(Resource):
             beneficiary = Beneficiary(
             name=receiver.first_name,
             Account = receiver.Account
-
          )
             beneficiary.save()
             # sender.beneficiaries.append(beneficiary)
             user_beneficiary = UserBeneficiary(
              sender_id=sender.id,
              beneficiary_id = beneficiary.id
-
          )
             user_beneficiary.save()
-
-   
         # print(sender.wallet.balance)
         # print('_________________________________________')
         # print(receiver.wallet.balance)
-
         '''------P O P U L A T E --------W A L L E T-------------A C T I V I T Y       TABLE'''
-
         sender_wallet_activity = WalletActivity(
             user_id =sender.id,
             transaction_type ='sent',
             amount=transaction.amount,
             description = f'sent money to {receiver.first_name}',
             transaction_id = transaction.id       
-              )
-        
-
+              )        
         receiver_wallet_activity = WalletActivity(
             user_id =receiver.id,
             transaction_type ='received',

@@ -1,4 +1,4 @@
-from api import  make_response,jsonify,User,app,ma,User_Profile,Category
+from api import  make_response,jsonify,User,app,ma,User_Profile,Category,Beneficiary
 from api import  Wallet,Transaction,WalletActivity
 
 from flask_restx import Api,Resource,Namespace,fields
@@ -27,8 +27,8 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
         model = User
         ordered = True
 
-    beneficiaries = ma.List(ma.Nested("BeneficiarySchema"))
-    wallet = ma.Nested("WalletSchema")
+    # beneficiaries = ma.List(ma.Nested("BeneficiarySchema"))
+    # wallet = ma.Nested("WalletSchema")
 
 User_Schema = UserSchema()
 Users_Schema = UserSchema(many=True)
@@ -42,7 +42,7 @@ class UserProfileSchema(ma.SQLAlchemyAutoSchema):
         ordered = True
 
     beneficiaries = ma.List(ma.Nested("BeneficiarySchema"))
-    wallet = ma.Nested("WalletSchema")
+    # wallet = ma.Nested("WalletSchema")
 
 
 
@@ -51,14 +51,14 @@ UserProfiles_Schema = UserProfileSchema(many=True)
 
 
 
-# class BeneficiarySchema(ma.SQLAlchemyAutoSchema):
-#     class Meta:
-#         model = Beneficiary
-#         ordered = True
+class BeneficiarySchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Beneficiary
+        ordered = True
 
 
-# Beneficiary_Schema = BeneficiarySchema()
-# Beneficiarys_Schema = BeneficiarySchema(many=True)
+Beneficiary_Schema = BeneficiarySchema()
+Beneficiarys_Schema = BeneficiarySchema(many=True)
 
 '''__________________________W A L L E T____________________________________________'''
 
