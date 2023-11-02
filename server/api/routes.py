@@ -241,19 +241,13 @@ class Transactions(Resource):
         
         return make_response(transactions_Schema.dump(all_transactions),200)
     
-    #_______C R E A T E _____________-T R A N S A C T I O N S_________________
+    '''_______C R E A T E _____________-T R A N S A C T I O N S_________________'''
     @transactions.expect(create_transaction)
     def post(self):
         data = request.get_json()
         # print(data)
-        #-------------------------post the transaction
-        transaction = Transaction(
-            amount=data['amount'],
-            receiver_account=data['account'],
-            sender_id=data['sender_id'],
-            category_id=Category.query.filter_by(type=data['category']).first().id,
-        )
-        transaction.save()
+
+
         '''----------check if-----Beneficary/Receiver-------exists------in the database-------------------'''
         receiver = User_Profile.query.filter_by(Account = data['account']).first()
         if not receiver:
@@ -270,13 +264,14 @@ class Transactions(Resource):
         if int(data['amount']) > sender.wallet.balance:
             remainder =  int(data['amount']) - sender.wallet.balance            
             return make_response({"message":f"you dont have {int(data['amount'])} take a loan of {remainder}?" })
+
     
         '''---------if else, proceed with the payment ------------------'''
         sender.wallet.balance -= int(data['amount'])
         receiver.wallet.balance += int(data['amount'])
         '''--------Charge the sender the transaction feees and deduct form the balance------------------'''
         print(sender.wallet.balance)
-        deduction_amount = sender.wallet.transaction_fees(data['amount'])
+        deduction_amount = Transaction.transaction_fees(data['amount'])
         sender.wallet.balance -= Decimal(deduction_amount)
         print(deduction_amount)
         print(sender.wallet.balance)
@@ -298,6 +293,24 @@ class Transactions(Resource):
         # print(sender.wallet.balance)
         # print('_________________________________________')
         # print(receiver.wallet.balance)
+
+
+
+        ''' #-------------------------P O S T     T R A N S A C T I O N'''
+        transaction = Transaction(
+            amount=data['amount'],
+            receiver_account=data['account'],
+            sender_id=data['sender_id'],
+            sender_name=sender.full_name(),
+            receiver_name=receiver.full_name(),
+            transaction_fee = deduction_amount,         
+            category_id=Category.query.filter_by(type=data['category']).first().id,
+            transaction_id = Transaction.generate_unique_id()
+
+        )
+        transaction.save()
+
+
         '''------P O P U L A T E --------W A L L E T-------------A C T I V I T Y       TABLE'''
         sender_wallet_activity = WalletActivity(
             user_id =sender.id,

@@ -5,7 +5,7 @@ from sqlalchemy.orm import validates
 from sqlalchemy.ext.hybrid import hybrid_property
 from werkzeug.security import generate_password_hash,check_password_hash
 
-
+import string, random
 
 
 metadata = MetaData(naming_convention={
@@ -80,7 +80,9 @@ class User_Profile(db.Model):
     user_beneficiary_association = db.relationship('UserBeneficiary', back_populates='user',cascade='all, delete-orphan')
     beneficiaries = association_proxy('user_beneficiary_association','beneficiary')
 
-
+    def full_name(self):
+        full_name = self.first_name + ' ' + self.last_name
+        return full_name
  
 
     def __repr__(self):
@@ -133,7 +135,7 @@ class Beneficiary(db.Model):
         db.session.commit()
 
     def __repr__(self):
-        return f'(id: {self.id}, benef_name: {self.name}, benef_Account: {self.Account}  )'
+        return f'(id: {self.id}, name: {self.name}, Account: {self.Account}  )'
 
 
 
@@ -143,6 +145,10 @@ class Transaction(db.Model):
     __tablename__ ='transactions'
 
     id = db.Column(db.Integer, primary_key=True)
+    transaction_id =db.Column(db.String)
+    sender_name =db.Column(db.String)
+    receiver_name =db.Column(db.String)
+    transaction_fee =  db.Column(db.Numeric(10,2))
     amount=db.Column(db.Integer)
     receiver_account=db.Column(db.Integer)
     created = db.Column(db.DateTime, server_default=db.func.now())
@@ -159,6 +165,42 @@ class Transaction(db.Model):
     def save(self):
         db.session.add(self)
         db.session.commit()
+
+    
+    
+
+    @classmethod
+    def transaction_fees(cls,amount):
+        amount = int(amount)
+        deductionA = 0.0017
+        deductionB = 0.002
+        deductionC = 0.0024
+        deductionD = 0.0026
+        deductionE = 0.0029
+        deductionF = 0.003
+
+        deduction = 0
+        if 0 <= amount <= 5000:
+            deduction = amount * deductionA
+        elif 5001 <= amount <= 15000:
+            deduction = amount * deductionB
+        elif 15001 <= amount <= 30000:
+            deduction = amount * deductionC
+        elif 30001 <= amount <= 55000:
+            deduction = amount * deductionD
+        elif 55001 <= amount <= 100000:
+            deduction = amount * deductionE
+        else:
+            deduction = amount * deductionF
+
+        return deduction
+    
+    @classmethod
+    def generate_unique_id(cls):
+        length = 14
+        characters = string.ascii_uppercase + string.digits
+        unique_id = ''.join(random.choice(characters) for _ in range(length))
+        return unique_id
 
     def __repr__(self):
         return f'(id: {self.id}, amount: {self.amount},sender_id: {self.sender_id} ,receiver_account: {self.receiver_account}, status: {self.status} )'
@@ -208,36 +250,6 @@ class Wallet(db.Model):
 
  
 
-    
-    def transaction_fees(self,amount):
-        deductionA= 0
-        deductionB= 0.01
-        deductionC= 0.024
-        deductionD= 0.0028
-        deductionE= 0.003
-        deductionF =0.004
-        amount =int(amount)
-        deduction =0
-        if 0<=amount<=5000:
-            deduction = amount * deductionA
-        if 5001<=amount<=15000:
-            deduction = amount * deductionB
-        if 1501<=amount<=30000:
-            deduction = amount * deductionC
-        if 30001<=amount<=55000:
-            deduction = amount * deductionD
-        if 55001<=amount<=100000:
-            deduction = amount * deductionE
-    
-        if 50000<=amount<=100000:
-            deduction = amount * deductionB
-        else:
-            deduction = amount * deductionF
-            
-        
-        
-    
-        return deduction
 
 
     def save(self):
