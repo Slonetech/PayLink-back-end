@@ -241,7 +241,7 @@ class Transactions(Resource):
         
         return make_response(transactions_Schema.dump(all_transactions),200)
     
-    #_______C R E A T E _____________-T R A N S A C T I O N S_________________
+    '''_______C R E A T E _____________-T R A N S A C T I O N S_________________'''
     @transactions.expect(create_transaction)
     def post(self):
         data = request.get_json()
@@ -254,6 +254,7 @@ class Transactions(Resource):
             category_id=Category.query.filter_by(type=data['category']).first().id,
         )
         transaction.save()
+
         '''----------check if-----Beneficary/Receiver-------exists------in the database-------------------'''
         receiver = User_Profile.query.filter_by(Account = data['account']).first()
         if not receiver:
@@ -276,7 +277,7 @@ class Transactions(Resource):
         receiver.wallet.balance += int(data['amount'])
         '''--------Charge the sender the transaction feees and deduct form the balance------------------'''
         print(sender.wallet.balance)
-        deduction_amount = sender.wallet.transaction_fees(data['amount'])
+        deduction_amount = Transaction.transaction_fees(data['amount'])
         sender.wallet.balance -= Decimal(deduction_amount)
         print(deduction_amount)
         print(sender.wallet.balance)
