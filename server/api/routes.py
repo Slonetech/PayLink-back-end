@@ -38,13 +38,11 @@ class Signup (Resource):
     # @auth.marshal_with(post_user)
     def post(self):
         data =request.get_json()
-        print(data)
+        # print(data)
     
         user_exists = User.query.filter_by(user_name=data['user_name']).first() is not None
 
         if user_exists:
-            print(session["user_id"]) #= new_user.id
-            print('-------------------------------------')
             return make_response(jsonify({"error": "User already exists"}), 409)
         
         '''--------------create a user opject-----------'''
@@ -103,8 +101,8 @@ class Signup (Resource):
 @auth.expect(login_model)
 class Login(Resource):
     def post(self):
-        print('---------------------------')
-        print(request.get_json())
+        # print('---------------------------')
+        # print(request.get_json())
         username = request.get_json().get("username",None)
         password = request.get_json().get("password",None)
 
@@ -116,9 +114,9 @@ class Login(Resource):
 
         user = User.query.filter_by(user_name=username).first()
     
-        print(user)
+        # print(user)
     
-        print('--------------__--__--__--__---------')    
+        # print('--------------__--__--__--__---------')    
         if user is None:
             return make_response( jsonify({"error": "Unauthorized"}), 401)
         
@@ -239,7 +237,7 @@ class Wallets(Resource):
 
 
 
-'''_____________T R A N S A C T I O N S____________________________'''
+'''_____________A L L          T R A N S A C T I O N S____________________________'''
 @transactions.route('/transactions')
 class Transactions(Resource):
     def get(self):
@@ -344,6 +342,22 @@ class Transactions(Resource):
             ))
         
 
+'''-----------P E R S O N A L I Z E     T R A N S A C T I O N S---------------'''
+
+@transactions.route('/user_transactions')
+class UserTransactions(Resource):
+    @jwt_required()
+    def get(self):
+        current_user = get_jwt_identity()
+        print('----------------------------',current_user)
+        all_transactions = Transaction.query.filter_by(sender_id = current_user).all()
+        print('----------------------',all_transactions)
+  
+
+        return make_response(transactions_Schema.dump(all_transactions),200)
+
+       
+        
 
 '''____________W A L L E T __________-A C T I V I T Y________________________'''
 

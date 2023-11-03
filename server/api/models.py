@@ -188,7 +188,7 @@ class Transaction(db.Model):
         return unique_id
     
     def __repr__(self):
-        return f'(id: {self.id}, amount: {self.amount},sender_id: {self.sender_id} ,receiver_account: {self.receiver_account}, status: {self.status} )'
+        return f'(id: {self.id}, transaction_id:{self.transaction_id} amount: {self.amount},sender_id: {self.sender_id} ,receiver_account: {self.receiver_account}, receiver_name: {self.receiver_name},sender_name: {self.sender_name}, category:{self.category.type} )'
 
 
 
