@@ -211,7 +211,28 @@ class UserProfiles(Resource):
              
         return make_response(UserProfiles_Schema.dump(all_users),200)
 
+ 
+@ns.route('/user/<int:id>')
+class Users(Resource):
+    
+    def delete(self,id):
+       
+     
+        user = User.query.filter_by(id=id).first()
+        if not user:
+            return make_response(jsonify({"message":"user NOT found"}))
+        db.session.delete(user)
+        db.session.commit()
+        print(user)
+        
+        # return make_response(wallets_Schema.dump(all_wallets),200)
+        return make_response(jsonify({
+            "msg":"user deleted succefully"
+        }),200)
+    
 
+   
+ 
 
 '''_____________W   A   L  L  E  T ____________________________'''
 @wallet.route('/wallet')
