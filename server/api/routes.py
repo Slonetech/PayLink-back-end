@@ -4,7 +4,7 @@ from api.serialization import api,ns,auth,Resource
 from api.serialization import UserProfiles_Schema,UserProfile_Schema
 from api.serialization import wallet,wallets_Schema,wallet_Schema,update_wallet
 from api.serialization import transactions_Schema,create_transaction,wallet_activities_Schema,transactions
-from api.serialization import post_user,user_model_input,User_Schema
+from api.serialization import post_user,user_model_input,User_Schema,login_model
 from api.serialization import create_wallet
 from api.serialization import beneficiaries,Beneficiarys_Schema
 
@@ -43,7 +43,9 @@ class Signup (Resource):
         user_exists = User.query.filter_by(user_name=data['user_name']).first() is not None
 
         if user_exists:
-            return jsonify({"error": "User already exists"}), 409
+            print(session["user_id"]) #= new_user.id
+            print('-------------------------------------')
+            return make_response(jsonify({"error": "User already exists"}), 409)
         
         '''--------------create a user opject-----------'''
         hashed_password = bcrypt.generate_password_hash(data['password'])
@@ -61,7 +63,7 @@ class Signup (Resource):
 
 
         
-        '''------------populat user_profile table-------------------------'''
+        # '''------------populat user_profile table-------------------------'''
 
         code =['+254','+256','+252','+251']
         user_profile = User_Profile(            
@@ -90,7 +92,6 @@ class Signup (Resource):
         db.session.commit()
        
 
-        session["user_id"] = new_user.id
         return make_response(jsonify(
             {"message":"thank you for joining us",
              "id":new_user.id,
@@ -103,18 +104,23 @@ class Signup (Resource):
 # Create a route to authenticate your users and return JWTs. The
 # create_access_token() function is used to actually generate the JWT.
 @auth.route('/login')
+@auth.expect(login_model)
 class Login(Resource):
     def post(self):
         print('---------------------------')
         print(request.get_json())
-        username = request.get_json().get("username",None)
+        username = request.get_json().get("user_name",None)
         password = request.get_json().get("password",None)
 
 
         if not username and not password:
-            return jsonify({"msg": "Bad username or password"})
+            return make_response( jsonify({"msg": "Bad username or password"}))
         
+
+
         user = User.query.filter_by(user_name=username).first()
+        # session["user_id"] = user.id  
+        print(session.get('user_id')) 
         # print(user)
     
         print('----------------------------------------')    
@@ -127,8 +133,10 @@ class Login(Resource):
     
         # if  not user.authenticate(password):
         #       return jsonify({"msg": "Bad username or password"})
-               
-        session["user_id"] = user.id
+
+
+        # session["user_id"] = user.id  
+        # print(session['user_id'])             
         return jsonify({
             "id": user.id,
             "user_name": user.user_name
@@ -142,9 +150,9 @@ class Login(Resource):
         # access_token = create_access_token(identity=user.id)
         # refresh_token = create_refresh_token(identity=user.id)
 
+        # session["user_id"] = user.id
         # return jsonify({
-        #     "access_token": access_token,
-        #     "refresh_token":refresh_token,
+           
         #     "user_id":user_profile.id,
         #     "user_name":user_profile.first_name,
         #     "user_role":user.is_admin,

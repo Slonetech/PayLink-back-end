@@ -183,3 +183,13 @@ post_user =api.model('signup_post',{
 
 
 
+login_model =api.model('login',{
+    
+    'user_name':fields.String,
+    # 'profile_picture':fields.String,
+    'password':fields.String,
+    # 'roles':fields.String change--- this when handlind the posting
+    # 'public_id':fields.String,-- and this one aswell
+  
+
+})
