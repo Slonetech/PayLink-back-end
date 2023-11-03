@@ -37,16 +37,6 @@ class User(db.Model):
 
     __table_args__ = (UniqueConstraint("public_id","user_name", name="User_unique_constraint"),)
 
-    # @hybrid_property
-    # def password_hash(self):
-    #     return self._password
-    
-    # @password_hash.setter
-    # def password_hash(self, password):
-    #     self._password = generate_password_hash(password,method='pbkdf2:sha256')
-
-    # def authenticate(self,password):
-    #     return True if check_password_hash(self._password, password) else False
 
 
 
@@ -68,18 +58,19 @@ class User_Profile(db.Model):
     phone_number=db.Column(db.Integer)
     Account=db.Column(db.Integer)
     profile_pictur= db.Column(db.String)
+    status = db.Column(db.String)
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    user = db.relationship('User', backref='users_profile',uselist=False)
+    user = db.relationship('User', backref='users_profile',uselist=False,single_parent=True)
 
-    wallet = db.relationship('Wallet', back_populates='user_profile', cascade='all,delete-orphan',uselist=False)
+    wallet = db.relationship('Wallet', back_populates='user_profile',uselist=False)
     transactions = db.relationship('Transaction', backref='user_profile', lazy=True)
     wallet_ctivities = db.relationship('WalletActivity', backref='user_profile', lazy=True)
 
     
 
     # beneficiary relationship
-    user_beneficiary_association = db.relationship('UserBeneficiary', back_populates='user',cascade='all, delete-orphan')
+    user_beneficiary_association = db.relationship('UserBeneficiary', back_populates='user')
     beneficiaries = association_proxy('user_beneficiary_association','beneficiary')
 
     def full_name(self):

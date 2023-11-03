@@ -218,7 +218,7 @@ class Users(Resource):
     def delete(self,id):
        
      
-        user = User.query.filter_by(id=id).first()
+        user = User_Profile.query.filter_by(id=id).first()
         if not user:
             return make_response(jsonify({"message":"user NOT found"}))
         db.session.delete(user)
