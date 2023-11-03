@@ -68,7 +68,6 @@ with app.app_context():
 
 
     Wallet.query.delete()
-
     wallet_list = []
     i=0
     for user in users_profile_list:
@@ -83,7 +82,6 @@ with app.app_context():
                 )
         
         wallet_list.append(wallet)
-
     db.session.add_all(wallet_list)
     db.session.commit()
 
@@ -107,24 +105,7 @@ with app.app_context():
 
     '''Transactions table        S E E D I N G _______________'''
 
-#     Transaction.query.delete()
-#     category_id = [cat.id for cat in category_list]
-#     transaction1 = Transaction(
-#         sender_id=[user.id for user in users_profile_list][0],
-    
-#         amount= random.randint(111111,999999),
-#         receiver_account=[user.Account for user in users_profile_list][1],
-#         category_id =rc(category_id)
-        
-# )
-#     transaction_id = tras
-#     transaction2 = Transaction(
-#         sender_id=[user.id for user in users_profile_list][1],
-#         amount= random.randint(111111,999999),
-#         receiver_account=[user.Account for user in users_profile_list][2],
-#         category_id =rc(category_id)
-        
-# )
+
 #     for i in range(10):
     Transaction.query.delete()
     category_id = [cat.id for cat in category_list]
@@ -152,54 +133,7 @@ with app.app_context():
     db.session.add_all(transaction_list)
     db.session.commit()
 
-#     transaction3 = Transaction(
-#         sender_id=[user.id for user in users_profile_list][2],
-#         amount= random.randint(111111,999999),
-#         receiver_account=[user.Account for user in users_profile_list][3],
-#         category_id =rc(category_id)
-        
-# )
-#     transaction4 = Transaction(
-#         sender_id=[user.id for user in users_profile_list][3],
-#         amount= random.randint(111111,999999),
-#         receiver_account=[user.Account for user in users_profile_list][4],
-#         category_id =rc(category_id)
-        
-# )
-#     transaction5 = Transaction(
-#         sender_id=[user.id for user in users_profile_list][0],
-#         amount= random.randint(111111,999999),
-#         receiver_account=[user.Account for user in users_profile_list][3],
-#         category_id =rc(category_id)
-        
-# )
-#     transaction6 = Transaction(
-#         sender_id=[user.id for user in users_profile_list][0],
-#         amount= random.randint(111111,999999),
-#         receiver_account=[user.Account for user in users_profile_list][2],
-#         category_id =rc(category_id)
-        
-# )
-#     transaction7 = Transaction(
-#         sender_id=[user.id for user in users_profile_list][0],
-#         amount= random.randint(111111,999999),
-#         receiver_account=[user.Account for user in users_profile_list][3],
-#         category_id =rc(category_id)
-        
-# )
-#     transaction8 = Transaction(
-#         sender_id=[user.id for user in users_profile_list][0],
-#         amount= random.randint(111111,9999999),
-#         receiver_account=[user.Account for user in users_profile_list][3],
-#         category_id =rc(category_id)
-        
-# )
 
-    # db.session.add_all(wallet_list)
-    # transaction_list = [transaction1,transaction2,transaction3,transaction4,transaction5,transaction6,transaction7,transaction8]
-    # transaction_list = [transaction1,transaction2]
-    # db.session.add_all(transaction_list)
-    # db.session.commit()
 
 
     '''____________W A L L E T__________A C T I V I T Y ___________________'''
@@ -208,6 +142,18 @@ with app.app_context():
     '''loop thru the transactoions and for each transaction record creat two walletActivity records
     one for the sender and one for the receiver'''
     
+    from datetime import datetime, timedelta
+
+# Define the start date and time interval (e.g., 7 days for a week)
+    start_date = datetime(2023, 1, 1)  # Set this to the actual start date in your data
+    time_interval = timedelta(days=7)
+
+# # Loop through your data and update the created_at values
+# for record in your_data:
+#     record.created_at = start_date
+#     start_date += time_interval
+
+
     WalletActivity.query.delete()
     wallet_activity_list=[]
     for transaction in transaction_list:
@@ -215,10 +161,13 @@ with app.app_context():
         receiver = User_Profile.query.filter_by(Account = transaction.receiver_account).first()
         sender_wallet_activity = WalletActivity(
             user_id =sender.id,
+            created_at = start_date,
             transaction_type ='sent',
             amount=transaction.amount,
             description = f'sent money to {receiver.first_name}',
             transaction_id = transaction.id        )
+        start_date += time_interval
+        
         
         wallet_activity_list.append(sender_wallet_activity)
 

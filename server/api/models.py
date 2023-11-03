@@ -152,23 +152,15 @@ class Transaction(db.Model):
     amount=db.Column(db.Integer)
     receiver_account=db.Column(db.Integer)
     created = db.Column(db.DateTime, server_default=db.func.now())
-
     sender_id = db.Column(db.Integer, db.ForeignKey('users_profile.id'), nullable=False)
-
-    wallet_ctivities = db.relationship('WalletActivity', backref='transaction', lazy=True)
-
-    
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'))
+    #*******************relationships********************************
+    wallet_ctivities = db.relationship('WalletActivity', backref='transaction', lazy=True)    
     category = db.relationship('Category', backref='transaction',uselist=False)
-
-
     def save(self):
         db.session.add(self)
         db.session.commit()
-
     
-    
-
     @classmethod
     def transaction_fees(cls,amount):
         amount = int(amount)
@@ -201,7 +193,7 @@ class Transaction(db.Model):
         characters = string.ascii_uppercase + string.digits
         unique_id = ''.join(random.choice(characters) for _ in range(length))
         return unique_id
-
+    
     def __repr__(self):
         return f'(id: {self.id}, amount: {self.amount},sender_id: {self.sender_id} ,receiver_account: {self.receiver_account}, status: {self.status} )'
 
@@ -218,10 +210,6 @@ class WalletActivity(db.Model):
 
     user_id = db.Column(db.Integer, db.ForeignKey('users_profile.id'), nullable=False)
     transaction_id = db.Column(db.Integer, db.ForeignKey('transactions.id'), nullable=False)
-
-
-
-
 
 
 class Category(db.Model):
