@@ -6,6 +6,8 @@ from api.serialization import wallet,wallets_Schema,wallet_Schema,update_wallet
 from api.serialization import transactions_Schema,create_transaction,wallet_activities_Schema,transactions
 from api.serialization import post_user,user_model_input,User_Schema
 from api.serialization import create_wallet
+from api.serialization import beneficiaries,Beneficiarys_Schema
+
 # from api.serialization import user_schema,ns,auth,Resource,user_model_input,login_input_model,vendor_model_update
 # from api.serialization import vendor_model_input,post_user
 import uuid
@@ -350,3 +352,16 @@ class WalletsActivity(Resource):
     
 
 
+'''------------B E N E F I C I A R I E S      M O D E L--------'''
+ 
+@beneficiaries.route('/beneficiaries')
+class Beneficiaries(Resource):
+    # @wallet.expect(update_wallet)
+    def get(self):
+        beneficiaries = Beneficiary.query.all()
+        # we choose a user till we fix the login and signup
+        user = User_Profile.query.filter_by(id=7).first()
+        benef = user.beneficiaries
+        if not beneficiaries or not benef:
+            return make_response({"msg":"not beneficiaries found in the db"})
+        return make_response(Beneficiarys_Schema.dump(benef))
