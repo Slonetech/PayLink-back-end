@@ -58,11 +58,7 @@ class Signup (Resource):
         )
         db.session.add(new_user)
         db.session.commit()
-       
-
-
-
-        
+               
         # '''------------populat user_profile table-------------------------'''
 
         code =['+254','+256','+252','+251']
@@ -109,7 +105,7 @@ class Login(Resource):
     def post(self):
         print('---------------------------')
         print(request.get_json())
-        username = request.get_json().get("user_name",None)
+        username = request.get_json().get("username",None)
         password = request.get_json().get("password",None)
 
 
@@ -119,49 +115,38 @@ class Login(Resource):
 
 
         user = User.query.filter_by(user_name=username).first()
-        # session["user_id"] = user.id  
-        print(session.get('user_id')) 
-        # print(user)
     
-        print('----------------------------------------')    
+        print(user)
+    
+        print('--------------__--__--__--__---------')    
         if user is None:
             return make_response( jsonify({"error": "Unauthorized"}), 401)
         
         #checking if the password is the same as hashed password
         if not bcrypt.check_password_hash(user.password, password):
             return jsonify({"error": "Unauthorized"}), 401
-    
-        # if  not user.authenticate(password):
-        #       return jsonify({"msg": "Bad username or password"})
+  
 
+      
+        user_profile = User_Profile.query.filter_by(user_id=user.id).first()
+     
+     
+     
+        access_token = create_access_token(identity=user.id)
+        refresh_token = create_refresh_token(identity=user.id)
 
-        # session["user_id"] = user.id  
-        # print(session['user_id'])             
         return jsonify({
-            "id": user.id,
-            "user_name": user.user_name
-        })
-        # user_profile = User_Profile.query.filter_by(user_id=user.id).first()
-        # print(user_profile)
-        # user_claims= UserObject( user_id=user.id ,user_name=user.user_name,user_role=user.roles)
-        # print(user_claims)
-     
-     
-        # access_token = create_access_token(identity=user.id)
-        # refresh_token = create_refresh_token(identity=user.id)
-
-        # session["user_id"] = user.id
-        # return jsonify({
-           
-        #     "user_id":user_profile.id,
-        #     "user_name":user_profile.first_name,
-        #     "user_role":user.is_admin,
-        #     "user_profile_pic":user_profile.profile_pictur,
-        #     "account_number":user_profile.Account
+            'access_token':access_token,
+            'refresh_token':refresh_token,
+            "user_id":user_profile.id,
+            "user_name":user_profile.first_name,
+            "user_role":user.is_admin,
+            "user_profile_pic":user_profile.profile_pictur,
+            "account_number":user_profile.Account
 
             
 
-        # })
+        })
 
 
        #***************R E F R E S H_____-T O K E N 
@@ -178,23 +163,7 @@ class Refresh(Resource):
         return jsonify({"access_token":access}),200
 
 
-@app.route("/logout", methods=["POST"])
-def logout_user():
-    session.pop("user_id")
-    return "200"
 
-@app.route("/@me")
-def get_current_user():
-    user_id = session.get("user_id")
-
-    if not user_id:
-        return jsonify({"error": "Unauthorized"}), 401
-    
-    user = User.query.filter_by(id=user_id).first()
-    return jsonify({
-        "id": user.id,
-        "user_name": user.user_name
-    }) 
 
 
 
