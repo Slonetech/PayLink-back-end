@@ -20,6 +20,10 @@ api.add_namespace(transactions)
 wallet=Namespace('wallet')
 api.add_namespace(wallet)
 
+beneficiaries=Namespace('beneficiaries')
+api.add_namespace(beneficiaries)
+
+
 
 
 class UserSchema(ma.SQLAlchemyAutoSchema):
@@ -44,18 +48,16 @@ class UserProfileSchema(ma.SQLAlchemyAutoSchema):
     beneficiaries = ma.List(ma.Nested("BeneficiarySchema"))
     # wallet = ma.Nested("WalletSchema")
 
-
-
 UserProfile_Schema = UserProfileSchema()
 UserProfiles_Schema = UserProfileSchema(many=True)
 
 
+'''------------B E N E F I C I A R I E S      S C H E M A---------'''
 
 class BeneficiarySchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Beneficiary
         ordered = True
-
 
 Beneficiary_Schema = BeneficiarySchema()
 Beneficiarys_Schema = BeneficiarySchema(many=True)
@@ -71,25 +73,6 @@ class WalletSchema(ma.SQLAlchemyAutoSchema):
     
 wallet_Schema = WalletSchema()
 wallets_Schema = WalletSchema(many=True)
-
-                #*********WALLET API.MODEL*************************************
-update_wallet =api.model('update_wallet',{
-
-    'amount':fields.Integer,
-  
-
-
-})
-create_wallet =api.model('create_wallet',{
-# i will  set the amoun to 0 since the is a new wallt the user created and status to Active
-    'user_prof_id':fields.Integer,
-    'type':fields.String,
-  
-
-
-})
-
-
 
 
 
@@ -112,9 +95,6 @@ class CategorySchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Category
         ordered = True
-   
-
-
  
 category_Schema = CategorySchema()
 categories_Schema = CategorySchema(many=True)
@@ -130,8 +110,39 @@ wallet_activity_Schema = WalletActivitySchema()
 wallet_activities_Schema = WalletActivitySchema(many=True)
 
 
+class TreansactionSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Transaction
+        ordered = True
+    sender_id=ma.auto_field()
+    # category=ma.auto_field()
+    category = ma.Nested("CategorySchema")
+
+
+ 
+transaction_Schema = TreansactionSchema()
+transactions_Schema = TreansactionSchema(many=True)
+
+
+
 '''_________A P I _________M O D E L S___________________'''
 
+                #*********WALLET API.MODEL*************************************
+update_wallet =api.model('update_wallet',{
+
+    'amount':fields.Integer,
+  
+
+
+})
+create_wallet =api.model('create_wallet',{
+# i will  set the amoun to 0 since the is a new wallt the user created and status to Active
+    'user_prof_id':fields.Integer,
+    'type':fields.String,
+  
+
+
+})
 create_transaction =api.model('create_transaction',{
     
     'amount':fields.Integer,
@@ -143,6 +154,7 @@ create_transaction =api.model('create_transaction',{
   
 
 })
+
 '''__________S I G N U P ____________'''
 
 user_model_input =api.model('signup',{
@@ -155,9 +167,8 @@ user_model_input =api.model('signup',{
   
 
 })
-
-
 post_user =api.model('signup_post',{
+
 
     'first_name':fields.String,
     'last_name':fields.String,
@@ -169,3 +180,6 @@ post_user =api.model('signup_post',{
   
 
 })
+
+
+
