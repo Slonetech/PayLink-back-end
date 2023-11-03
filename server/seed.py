@@ -1,4 +1,4 @@
-from api import app,db,User,User_Profile,Wallet,Transaction,Category,WalletActivity,Beneficiary,UserBeneficiary
+from api import app,db,User,User_Profile,Wallet,Transaction,Category,WalletActivity,Beneficiary,UserBeneficiary,bcrypt
 from faker import Faker
 import random 
 from random import randint, choice as rc
@@ -19,10 +19,11 @@ with app.app_context():
         
         user_name = fake.unique.user_name()
         company = fake.company()
+        hashed_password = bcrypt.generate_password_hash(str(random.randint(2,54324423)))
 
         user = User(
             user_name=user_name,
-            password_hash = str(random.randint(2,54324423)),
+            password = hashed_password,
             public_id = str(uuid.uuid4()),
             is_admin=rc([0,1])
 
@@ -56,7 +57,8 @@ with app.app_context():
                 phone_number=random.randint(1111111111,9999999999),
                 Account = ''.join(random.choice(string.digits) for _ in range(14)),            
                 profile_pictur='https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-                user_id = [user.id for user in user_list][i]
+                user_id = [user.id for user in user_list][i],
+                status= rc(['Acitve','Inactive'])
                 
             )
             i+=1

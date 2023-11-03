@@ -1,12 +1,15 @@
 from api import  make_response,jsonify,User_Profile,User,Wallet,Transaction,WalletActivity,app,db,request
-from api import  Beneficiary,UserBeneficiary,Category,app,db,request
+from api import  Beneficiary,UserBeneficiary,Category,app,db,request,bcrypt,session
 from api.serialization import api,ns,auth,Resource
 from api.serialization import UserProfiles_Schema,UserProfile_Schema
 from api.serialization import wallet,wallets_Schema,wallet_Schema,update_wallet
 from api.serialization import transactions_Schema,create_transaction,wallet_activities_Schema,transactions
-from api.serialization import post_user,user_model_input,User_Schema
+from api.serialization import post_user,user_model_input,User_Schema,login_model
 from api.serialization import create_wallet
 from api.serialization import beneficiaries,Beneficiarys_Schema
+
+
+
 
 # from api.serialization import user_schema,ns,auth,Resource,user_model_input,login_input_model,vendor_model_update
 # from api.serialization import vendor_model_input,post_user
@@ -34,29 +37,33 @@ class Signup (Resource):
     @auth.expect(user_model_input)
     # @auth.marshal_with(post_user)
     def post(self):
-      
         data =request.get_json()
         print(data)
     
-        if data['user_name'] in [user.user_name for user in User.query.all()]:
-            return make_response(jsonify({"message":"username already taken"}))
+        user_exists = User.query.filter_by(user_name=data['user_name']).first() is not None
+
+        if user_exists:
+            print(session["user_id"]) #= new_user.id
+            print('-------------------------------------')
+            return make_response(jsonify({"error": "User already exists"}), 409)
         
-      
+        '''--------------create a user opject-----------'''
+        hashed_password = bcrypt.generate_password_hash(data['password'])
         new_user = User(
             user_name=data['user_name'],           
-            password_hash = data['password'],
+            password = hashed_password,
             public_id = str(uuid.uuid4()),
             is_admin=0
 
         )
-
-
         db.session.add(new_user)
         db.session.commit()
+       
+
 
 
         
-        '''------------populat user_profile table-------------------------'''
+        # '''------------populat user_profile table-------------------------'''
 
         code =['+254','+256','+252','+251']
         user_profile = User_Profile(            
@@ -69,11 +76,8 @@ class Signup (Resource):
         user_id = new_user.id,
         # email=data['first_name']+'@' + rc(['gmail','yahoo','outlook','iCloud Mail '])+'.com',
         )
-
         db.session.add(user_profile)
         db.session.commit()
-
-
 
 
         '''---------CREATE A WALLET FOR THE USER-----------------------------'''
@@ -84,70 +88,80 @@ class Signup (Resource):
             status = 'Active',
             Account =user_profile.Account
         )
-       
-    
-
-
         db.session.add(new_wallet)
         db.session.commit()
-        # print('-----------------------------------------------')
+       
 
-        # print(new_user)
-
-        # return new_user,200
-        # return make_response(User_Schema.dump(user_profile),200)
-        # return make_response(UserProfile_Schema.dump(user_profile),200)
-        # return make_response(wallet_Schema.dump(new_wallet),200)
         return make_response(jsonify(
-            {"message":"thank you for joining us"}
+            {"message":"thank you for joining us",
+             "id":new_user.id,
+             "user_name":new_user.user_name
+             }
         ),200)
+   
 
 
 # Create a route to authenticate your users and return JWTs. The
 # create_access_token() function is used to actually generate the JWT.
 @auth.route('/login')
+@auth.expect(login_model)
 class Login(Resource):
     def post(self):
         print('---------------------------')
         print(request.get_json())
-        username = request.get_json().get("username",None)
+        username = request.get_json().get("user_name",None)
         password = request.get_json().get("password",None)
 
 
         if not username and not password:
-            return jsonify({"msg": "Bad username or password"})
+            return make_response( jsonify({"msg": "Bad username or password"}))
         
+
+
         user = User.query.filter_by(user_name=username).first()
+        # session["user_id"] = user.id  
+        print(session.get('user_id')) 
         # print(user)
     
         print('----------------------------------------')    
-        if not user:
-            return jsonify({"message": "User not found"})
-        if  not user.authenticate(password):
-              return jsonify({"msg": "Bad username or password"})
-               
+        if user is None:
+            return make_response( jsonify({"error": "Unauthorized"}), 401)
+        
+        #checking if the password is the same as hashed password
+        if not bcrypt.check_password_hash(user.password, password):
+            return jsonify({"error": "Unauthorized"}), 401
+    
+        # if  not user.authenticate(password):
+        #       return jsonify({"msg": "Bad username or password"})
 
-        user_profile = User_Profile.query.filter_by(user_id=user.id).first()
+
+        # session["user_id"] = user.id  
+        # print(session['user_id'])             
+        return jsonify({
+            "id": user.id,
+            "user_name": user.user_name
+        })
+        # user_profile = User_Profile.query.filter_by(user_id=user.id).first()
         # print(user_profile)
         # user_claims= UserObject( user_id=user.id ,user_name=user.user_name,user_role=user.roles)
         # print(user_claims)
      
      
-        access_token = create_access_token(identity=user.id)
-        refresh_token = create_refresh_token(identity=user.id)
+        # access_token = create_access_token(identity=user.id)
+        # refresh_token = create_refresh_token(identity=user.id)
 
-        return jsonify({
-            "access_token": access_token,
-            "refresh_token":refresh_token,
-            "user_id":user_profile.id,
-            "user_name":user_profile.first_name,
-            "user_role":user.is_admin,
-            "user_profile_pic":user_profile.profile_pictur,
-            "account_number":user_profile.Account
+        # session["user_id"] = user.id
+        # return jsonify({
+           
+        #     "user_id":user_profile.id,
+        #     "user_name":user_profile.first_name,
+        #     "user_role":user.is_admin,
+        #     "user_profile_pic":user_profile.profile_pictur,
+        #     "account_number":user_profile.Account
 
             
 
-        })
+        # })
 
 
        #***************R E F R E S H_____-T O K E N 
@@ -164,6 +178,27 @@ class Refresh(Resource):
         return jsonify({"access_token":access}),200
 
 
+@app.route("/logout", methods=["POST"])
+def logout_user():
+    session.pop("user_id")
+    return "200"
+
+@app.route("/@me")
+def get_current_user():
+    user_id = session.get("user_id")
+
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    user = User.query.filter_by(id=user_id).first()
+    return jsonify({
+        "id": user.id,
+        "user_name": user.user_name
+    }) 
+
+
+
+
 
 
 @ns.route('/users')
@@ -176,7 +211,28 @@ class UserProfiles(Resource):
              
         return make_response(UserProfiles_Schema.dump(all_users),200)
 
+ 
+@ns.route('/user/<int:id>')
+class Users(Resource):
+    
+    def delete(self,id):
+       
+     
+        user = User_Profile.query.filter_by(id=id).first()
+        if not user:
+            return make_response(jsonify({"message":"user NOT found"}))
+        db.session.delete(user)
+        db.session.commit()
+        print(user)
+        
+        # return make_response(wallets_Schema.dump(all_wallets),200)
+        return make_response(jsonify({
+            "msg":"user deleted succefully"
+        }),200)
+    
 
+   
+ 
 
 '''_____________W   A   L  L  E  T ____________________________'''
 @wallet.route('/wallet')
