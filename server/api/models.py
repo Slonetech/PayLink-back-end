@@ -63,7 +63,8 @@ class User_Profile(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     user = db.relationship('User', backref='users_profile',uselist=False,single_parent=True)
 
-    wallet = db.relationship('Wallet', back_populates='user_profile',uselist=False)
+    wallet = db.relationship('Wallet', backref='user_profile', lazy=True)
+
     transactions = db.relationship('Transaction', backref='user_profile', lazy=True)
     wallet_ctivities = db.relationship('WalletActivity', backref='user_profile', lazy=True)
 
@@ -150,9 +151,12 @@ class Transaction(db.Model):
     #*******************relationships********************************
     wallet_ctivities = db.relationship('WalletActivity', backref='transaction', lazy=True)    
     category = db.relationship('Category', backref='transaction',uselist=False)
+
+    #!-----------------------------------------------------------------------
     def save(self):
         db.session.add(self)
         db.session.commit()
+    #!-----------------------------------------------------------------------
     
     @classmethod
     def transaction_fees(cls,amount):
@@ -179,6 +183,8 @@ class Transaction(db.Model):
             deduction = amount * deductionF
 
         return deduction
+
+    #!-----------------------------------------------------------------------
     
     @classmethod
     def generate_unique_id(cls):
@@ -227,7 +233,7 @@ class Wallet(db.Model):
 
 
     user_prof_id = db.Column(db.Integer, db.ForeignKey('users_profile.id'))
-    user_profile = db.relationship('User_Profile', back_populates='wallet', )
+    # user_profile = db.relationship('User_Profile', back_populates='wallet', )
 
  
 
@@ -238,7 +244,7 @@ class Wallet(db.Model):
         db.session.commit()
 
     def __repr__(self):
-        return f'(id: {self.id}, balance: {self.balance},user_id: {self.user_prof_id}  )'
+        return f'(id: {self.id}, balance: {self.balance},user_id: {self.user_prof_id}, type: {self.type}  )'
 
 
 

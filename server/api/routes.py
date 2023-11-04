@@ -218,17 +218,42 @@ class Wallets(Resource):
     @wallet.expect(create_wallet)
     def post(self):
         data = request.get_json()
-        user_prof_id = data['user_prof_id']
+        print(data)
+        amount = Decimal(data['amount'])
+        user_id=data['user_id']
         type = data['type']
+
+        # query all wallet types the user has
+        wallet_types = [wallet.type for wallet in Wallet.query.filter_by(user_prof_id = user_id).all()]
+        #check if the chosen type already exisits of if the use hser it already
+        if type  in wallet_types:
+            return make_response(jsonify({"msg":f"you already have a {type} wallet"}))
+        # deduct the amount the user wants to move from main wallet
+        #query the main wallet 
+        main_wallet =  Wallet.query.filter_by(user_prof_id = user_id , type ='Main').first()
+        #check if the money the user wants to move is lesser than the balance in Main wallet
+        if amount > main_wallet.balance:
+            needed_balance = amount - main_wallet.balance     
+            return make_response({"message":f"you dont have {amount} take a loan of {needed_balance}?" })
+        #-----deduction
+        main_wallet.balance -=amount
+
+        db.session.commit()
+       
+
+        '''--------fin d the wallet that is attached'''
+    
         new_wallet = Wallet(
-            balance=0,
-            user_prof_id=user_prof_id,
-            type =type,
+            balance= amount,
+            user_prof_id=user_id,
+            type = type,
             status = 'Active'
 
         )
-        # new_wallet.save()
+        print(new_wallet)
+        new_wallet.save()
         return make_response(wallet_Schema.dump(new_wallet),200)
+
 
     
     

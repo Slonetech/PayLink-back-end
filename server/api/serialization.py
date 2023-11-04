@@ -46,7 +46,7 @@ class UserProfileSchema(ma.SQLAlchemyAutoSchema):
         ordered = True
 
     beneficiaries = ma.List(ma.Nested("BeneficiarySchema"))
-    wallet = ma.Nested("WalletSchema")
+    wallet = ma.List(ma.Nested("WalletSchema"))
     transactions =  ma.List(ma.Nested("TreansactionSchema"))
     wallet_ctivities=ma.List(ma.Nested("WalletActivitySchema"))
 
