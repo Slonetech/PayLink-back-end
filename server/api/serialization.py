@@ -161,9 +161,9 @@ create_transaction =api.model('create_transaction',{
 
 user_model_input =api.model('signup',{
     
-    'user_name':fields.String,
-    # 'profile_picture':fields.String,
-    'password':fields.String,
+    'amout':fields.String,
+    'type':fields.String,
+    'user_id':fields.String,
     # 'roles':fields.String change--- this when handlind the posting
     # 'public_id':fields.String,-- and this one aswell
   
@@ -195,3 +195,9 @@ login_model =api.model('login',{
   
 
 })
+
+
+
+
+
+
