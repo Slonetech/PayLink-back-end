@@ -68,6 +68,7 @@ class Signup (Resource):
         Account = ''.join(random.choice(string.digits) for _ in range(14)),            
         profile_pictur='https://images.ctfassets.net/h6goo9gw1hh6/2sNZtFAWOdP1lmQ33VwRN3/24e953b920a9cd0ff2e1d587742a2472/1-intro-photo-final.jpg?w=1200&h=992&fl=progressive&q=70&fm=jpg',
         user_id = new_user.id,
+        status= rc(['Active', 'Inactive'])
         # email=data['first_name']+'@' + rc(['gmail','yahoo','outlook','iCloud Mail '])+'.com',
         )
         db.session.add(user_profile)
@@ -180,7 +181,24 @@ class UserProfiles(Resource):
 
  
 
-   
+@ns.route('/user')
+class SingleUserProfile(Resource):
+    @jwt_required()
+    def get(self):
+        current_user = get_jwt_identity()
+
+        print('---------------------------: ',current_user)
+        print('---------------------------: ',current_user)
+        user = User_Profile.query.filter_by(user_id=current_user).first()
+        print(user)
+
+        # if not all_users:
+        #     return make_response(jsonify({"message":"no Users found"}))   
+             
+        return make_response(UserProfile_Schema.dump(user),200)
+
+ 
+
  
 
 '''_____________W   A   L  L  E  T ____________________________'''
@@ -282,10 +300,10 @@ class Transactions(Resource):
         sender.wallet.balance -= Decimal(deduction_amount)
         print(deduction_amount)
         print(sender.wallet.balance)
-        '''----------check if the RECEIVER is a beneficiary of the sender-------------------'''
 
-        is_beneficiary = Beneficiary.query.filter_by(Account = receiver.Account).first()
-        if not is_beneficiary:
+        '''----------check if the RECEIVER is a beneficiary of the sender-------------------'''
+        # is_beneficiary = Beneficiary.query.filter_by(Account = receiver.Account).first()
+        if receiver.first_name not in [ben.name for ben in  sender.beneficiaries]:
             beneficiary = Beneficiary(
             name=receiver.first_name,
             Account = receiver.Account
@@ -349,9 +367,9 @@ class UserTransactions(Resource):
     @jwt_required()
     def get(self):
         current_user = get_jwt_identity()
-        print('----------------------------',current_user)
+        # print('----------------------------',current_user)
         all_transactions = Transaction.query.filter_by(sender_id = current_user).all()
-        print('----------------------',all_transactions)
+        # print('----------------------',all_transactions)
   
 
         return make_response(transactions_Schema.dump(all_transactions),200)
@@ -386,3 +404,19 @@ class Beneficiaries(Resource):
         if not beneficiaries or not benef:
             return make_response({"msg":"not beneficiaries found in the db"})
         return make_response(Beneficiarys_Schema.dump(benef))
+
+
+# @beneficiaries.route('/user_beneficiaries')
+# class UserBeneficiaries(Resource):
+#     # @wallet.expect(update_wallet)
+#     @jwt_required()
+#     def get(self):
+#         current_user = get_jwt_identity()
+#         print('----------------------------',current_user)
+#         beneficiaries = Beneficiary.query.all()
+#         # we choose a user till we fix the login and signup
+#         user = User_Profile.query.filter_by(id=7).first()
+#         benef = user.beneficiaries
+#         # if not beneficiaries or not benef:
+#         #     return make_response({"msg":"not beneficiaries found in the db"})
+#         return make_response(Beneficiarys_Schema.dump(benef))
