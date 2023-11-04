@@ -132,7 +132,7 @@ transactions_Schema = TreansactionSchema(many=True)
                 #*********WALLET API.MODEL*************************************
 update_wallet =api.model('update_wallet',{
 
-    'amount':fields.Integer,
+    'id':fields.Integer,
   
 
 

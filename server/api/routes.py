@@ -188,7 +188,6 @@ class SingleUserProfile(Resource):
         current_user = get_jwt_identity()
 
         print('---------------------------: ',current_user)
-        print('---------------------------: ',current_user)
         user = User_Profile.query.filter_by(user_id=current_user).first()
         print(user)
 
@@ -261,15 +260,19 @@ class Wallets(Resource):
 @wallet.route('/wallet/<int:id>')
 class Wallets(Resource):
     @wallet.expect(update_wallet)
-    def post(self,id):
+    def put(self,id):
         data = request.get_json()
      
         wallet = Wallet.query.filter_by(user_prof_id=id).first()
         if not wallet:
             return make_response(jsonify({"message":"wallet NOT found"}))
-        wallet.balance +=data['amount']
+        if wallet.status == 'Active':
+            wallet.status  ='Inactive'
+        elif  wallet.status == 'Inactive':
+            wallet.status  ='Active'
+
         db.session.commit()
-        print(wallet)
+        # print(wallet)
         
         # return make_response(wallets_Schema.dump(all_wallets),200)
         return make_response(wallet_Schema.dump(wallet),200)
