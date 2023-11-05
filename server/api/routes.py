@@ -5,7 +5,7 @@ from api.serialization import UserProfiles_Schema,UserProfile_Schema
 from api.serialization import wallet,wallets_Schema,wallet_Schema,update_wallet
 from api.serialization import transactions_Schema,create_transaction,wallet_activities_Schema,transactions
 from api.serialization import post_user,user_model_input,User_Schema,login_model
-from api.serialization import create_wallet
+from api.serialization import create_wallet,move_money
 from api.serialization import beneficiaries,Beneficiarys_Schema
 
 
@@ -224,7 +224,7 @@ class Wallets(Resource):
 
         # query all wallet types the user has
         wallet_types = [wallet.type for wallet in Wallet.query.filter_by(user_prof_id = user_id).all()]
-        #check if the chosen type already exisits of if the use hser it already
+        #check if the chosen type already exisits or if the use hser it already
         if type  in wallet_types:
             return make_response(jsonify({"msg":f"you already have a {type} wallet"}))
         # deduct the amount the user wants to move from main wallet
@@ -254,8 +254,53 @@ class Wallets(Resource):
         return make_response(wallet_Schema.dump(new_wallet),200)
 
 
-    
-    
+
+
+
+
+'''_____________M O V E      M O N E Y  ____________________________'''
+
+@wallet.route('/move-movey')
+class Wallets(Resource):
+    @wallet.expect(move_money)
+    def post(self):
+        data = request.get_json()
+        # print(data)
+        amount = Decimal(data['amount'])
+        user_id=data['user_id']
+        to_wallet = data['to_wallet']
+        from_wallet = data['from_wallet']
+
+        # the the
+
+        # query all wallet types the user has
+        source = Wallet.query.filter_by(type = from_wallet , user_prof_id= user_id).first()
+        target = Wallet.query.filter_by(type = to_wallet , user_prof_id= user_id).first()
+        if source.type == target.type:
+            return make_response(jsonify({"msg":"we cant move money from and to the same wallet"}),200)
+        # ------------------------make the transefer
+        #-----check if source has the money
+        if amount > source.balance:
+            needed_balance = amount - source.balance    
+            return make_response({"message":f"you dont have {amount} take a loan of {needed_balance}?" })
+        print(        source.balance)
+        print(        target.balance)
+        #deduct form source ---------------------
+        source.balance -=amount
+
+        # add to target --------------------
+        target.balance +=amount
+        source.save()
+        target.save()
+        db.session.commit()
+        print(        source.balance)
+        print(        target.balance)
+
+        return make_response(jsonify({"msg":"Transfere complete"}),200)
+
+
+
+        
  
 @wallet.route('/wallet/<int:id>')
 class Wallets(Resource):
@@ -267,6 +312,11 @@ class Wallets(Resource):
         wallet = Wallet.query.filter_by(id=id).first()
         if not wallet:
             return make_response(jsonify({"message":"wallet NOT found"}))
+        
+        
+        if wallet.type == 'Main':
+              return make_response(jsonify({"message":"cannot deactivate Main wallet"}))
+
         if wallet.status == 'Active':
             wallet.status  ='Inactive'
         elif  wallet.status == 'Inactive':

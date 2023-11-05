@@ -145,6 +145,16 @@ create_wallet =api.model('create_wallet',{
 
 
 })
+move_money =api.model('move_money',{
+# i will  set the amoun to 0 since the is a new wallt the user created and status to Active
+    'amount':fields.Integer,
+    'from_wallet':fields.String,
+    'to_wallet':fields.String,
+    'user_id':fields.String,
+  
+
+
+})
 create_transaction =api.model('create_transaction',{
     
     'amount':fields.Integer,
