@@ -46,7 +46,7 @@ class UserProfileSchema(ma.SQLAlchemyAutoSchema):
         ordered = True
 
     beneficiaries = ma.List(ma.Nested("BeneficiarySchema"))
-    wallet = ma.Nested("WalletSchema")
+    wallet = ma.List(ma.Nested("WalletSchema"))
     transactions =  ma.List(ma.Nested("TreansactionSchema"))
     wallet_ctivities=ma.List(ma.Nested("WalletActivitySchema"))
 
@@ -132,7 +132,7 @@ transactions_Schema = TreansactionSchema(many=True)
                 #*********WALLET API.MODEL*************************************
 update_wallet =api.model('update_wallet',{
 
-    'amount':fields.Integer,
+    'id':fields.Integer,
   
 
 
@@ -141,6 +141,16 @@ create_wallet =api.model('create_wallet',{
 # i will  set the amoun to 0 since the is a new wallt the user created and status to Active
     'user_prof_id':fields.Integer,
     'type':fields.String,
+  
+
+
+})
+move_money =api.model('move_money',{
+# i will  set the amoun to 0 since the is a new wallt the user created and status to Active
+    'amount':fields.Integer,
+    'from_wallet':fields.String,
+    'to_wallet':fields.String,
+    'user_id':fields.String,
   
 
 
