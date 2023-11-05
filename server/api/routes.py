@@ -276,17 +276,16 @@ class Wallets(Resource):
         target = Wallet.query.filter_by(type = to_wallet , user_prof_id= user_id).first()
      
         if source.type == target.type:
-            return make_response({"msg":"we cant move money from and to the same wallet"}),200
+            return make_response({"msg":"we cant move money from and to the same wallet"},200)
         # ------------------------make the transefer
         if source.status =='Inactive':
-            return make_response({"msg":f"{source.type} is Inactive, activate it first" }),401
-
+            return make_response( {"msg":f"{source.type} is Inactive, activate it first" },200)
         #-----check if source has the money
         if amount > source.balance:
             needed_balance = amount - source.balance    
-            return make_response({"msg":f"you dont have {amount} take a loan of {needed_balance}?" })
-        # print(        source.balance)
-        # print(        target.balance)
+            return make_response(jsonify({"msg":f"you dont have {amount} in your {source.type} take a loan of {needed_balance}?" }))
+        print(        source.balance)
+        print(        target.balance)
         #deduct form source ---------------------
         source.balance -=amount
 
@@ -295,10 +294,14 @@ class Wallets(Resource):
         source.save()
         target.save()
         db.session.commit()
-        # print(        source.balance)
-        # print(        target.balance)
+        print(        source.balance)
+        print(        target.balance)
+        id = data['user_id']
+        wallets = Wallet.query.filter_by(user_prof_id=data['user_id']).all()
 
-        return make_response({"data":"Transfere complete"},200)
+        print(wallets)
+
+        return jsonify(wallets_Schema.dump(wallets))
     
 
 
