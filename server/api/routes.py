@@ -354,6 +354,9 @@ class Transactions(Resource):
 
         '''----------check if-----Beneficary/Receiver-------exists------in the database-------------------'''
         receiver = User_Profile.query.filter_by(Account = data['account']).first()
+        receiver_main_wallet = [ wallet  for wallet in Wallet.query.filter_by(user_prof_id = receiver.id).all() if wallet.type=='Main'][0]
+        # print(receiver_main_wallet.balance)
+
         if not receiver:
                 return make_response(jsonify(
             {"message":f"Account does not exist "},
@@ -364,24 +367,28 @@ class Transactions(Resource):
         #---------check if th erciver id is in 
         #--------------move the money 
         sender = User_Profile.query.filter_by(id = data['sender_id']).first()
+        # print(sender)
+        #-----user has many wallets, so we get the Main wallet
+        sender_main_wallet = [ wallet  for wallet in Wallet.query.filter_by(user_prof_id = sender.id).all() if wallet.type=='Main'][0]
+        # print(sender_main_wallet)
+        # print(sender_main_wallet.balance)
         ''' ---------check if amount is greater than what is in their wallet-----------------'''
-        if int(data['amount']) > sender.wallet.balance:
-            remainder =  int(data['amount']) - sender.wallet.balance            
+        if int(data['amount']) > sender_main_wallet.balance:
+            remainder =  int(data['amount']) - sender_main_wallet.balance            
             return make_response({"message":f"you dont have {int(data['amount'])} take a loan of {remainder}?" })
 
     
         '''---------if else, proceed with the payment ------------------'''
-        sender.wallet.balance -= int(data['amount'])
-        receiver.wallet.balance += int(data['amount'])
+        sender_main_wallet.balance -= int(data['amount'])
+        receiver_main_wallet.balance += int(data['amount'])
         '''--------Charge the sender the transaction feees and deduct form the balance------------------'''
-        print(sender.wallet.balance)
         deduction_amount = Transaction.transaction_fees(data['amount'])
-        sender.wallet.balance -= Decimal(deduction_amount)
+        sender_main_wallet.balance -= Decimal(deduction_amount)
         print(deduction_amount)
-        print(sender.wallet.balance)
+        print(sender_main_wallet.balance)
 
         '''----------check if the RECEIVER is a beneficiary of the sender-------------------'''
-        # is_beneficiary = Beneficiary.query.filter_by(Account = receiver.Account).first()
+        is_beneficiary = Beneficiary.query.filter_by(Account = receiver.Account).first()
         if receiver.first_name not in [ben.name for ben in  sender.beneficiaries]:
             beneficiary = Beneficiary(
             name=receiver.first_name,
@@ -394,9 +401,9 @@ class Transactions(Resource):
              beneficiary_id = beneficiary.id
          )
             user_beneficiary.save()
-        # print(sender.wallet.balance)
+        # print(sender_main_wallet.balance)
         # print('_________________________________________')
-        # print(receiver.wallet.balance)
+        # print(receiver_main_wallet.balance)
 
 
 
