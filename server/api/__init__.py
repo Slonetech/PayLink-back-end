@@ -22,6 +22,11 @@ app = Flask(__name__)
 # app.config.from_object(ApplicationConfig)
 
 CORS(app, supports_credentials=True)
+CORS(app, origins= "http://localhost:5173")
+CORS(app, methods=["GET", "POST", "PUT", "DELETE"])
+CORS(app, allow_headers=["Content-Type"])
+CORS(app, supports_credentials=True)  # Enable cookies and credentials
+
 bcrypt = Bcrypt(app)
 
 sess = Session()

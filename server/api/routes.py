@@ -43,7 +43,7 @@ class Signup (Resource):
         user_exists = User.query.filter_by(user_name=data['user_name']).first() is not None
 
         if user_exists:
-            return make_response(jsonify({"error": "User already exists"}), 409)
+            return {"error": "User already exists"}, 409
         
         '''--------------create a user opject-----------'''
         hashed_password = bcrypt.generate_password_hash(data['password'])
@@ -87,12 +87,10 @@ class Signup (Resource):
         db.session.commit()
        
 
-        return make_response(jsonify(
-            {"message":"thank you for joining us",
+        return             {"msg":"thank you for joining us",
              "id":new_user.id,
              "user_name":new_user.user_name
-             }
-        ),200)
+             }        ,200
    
 
 
@@ -109,7 +107,7 @@ class Login(Resource):
 
 
         if not username and not password:
-            return make_response( jsonify({"msg": "Bad username or password"}))
+            return make_response( {"msg": "Bad username or password"})
         
 
 
@@ -119,11 +117,11 @@ class Login(Resource):
     
         # print('--------------__--__--__--__---------')    
         if user is None:
-            return make_response( jsonify({"error": "Unauthorized"}), 401)
+            return make_response( {"error": "Unauthorized"}), 401
         
         #checking if the password is the same as hashed password
         if not bcrypt.check_password_hash(user.password, password):
-            return jsonify({"error": "Unauthorized"}), 401
+            return make_response({"error": "Unauthorized"}), 401
   
 
       
@@ -134,7 +132,7 @@ class Login(Resource):
         access_token = create_access_token(identity=user.id)
         refresh_token = create_refresh_token(identity=user.id)
 
-        return jsonify({
+        return  make_response({
             'access_token':access_token,
             'refresh_token':refresh_token,
             "user_id":user_profile.id,
@@ -146,6 +144,7 @@ class Login(Resource):
             
 
         })
+     
 
 
        #***************R E F R E S H_____-T O K E N 
@@ -159,7 +158,7 @@ class Refresh(Resource):
         access = create_access_token(identity = identity)
 
     
-        return jsonify({"access_token":access}),200
+        return make_response({"access_token":access}),200
 
 
 
@@ -175,7 +174,7 @@ class UserProfiles(Resource):
         all_users = User_Profile.query.all()
 
         if not all_users:
-            return make_response(jsonify({"message":"no Users found"}))   
+            return make_response({"msg":"no Users found"})
              
         return make_response(UserProfiles_Schema.dump(all_users),200)
 
@@ -191,8 +190,7 @@ class SingleUserProfile(Resource):
         user = User_Profile.query.filter_by(user_id=current_user).first()
         # print(user)
 
-        # if not all_users:
-        #     return make_response(jsonify({"message":"no Users found"}))   
+      
              
         return make_response(UserProfile_Schema.dump(user),200)
 
@@ -207,7 +205,7 @@ class Wallets(Resource):
         all_wallets = Wallet.query.all()
 
         if not all_wallets:
-            return make_response(jsonify({"message":"no Wallets currently"}))
+            return make_response({"msg":"no Wallets currently"})
         
         return make_response(wallets_Schema.dump(all_wallets),200)
     
@@ -226,14 +224,14 @@ class Wallets(Resource):
         wallet_types = [wallet.type for wallet in Wallet.query.filter_by(user_prof_id = user_id).all()]
         #check if the chosen type already exisits or if the use hser it already
         if type  in wallet_types:
-            return make_response(jsonify({"msg":f"you already have a {type} wallet"}))
+            return make_response({"msg":f"you already have a {type} wallet"})
         # deduct the amount the user wants to move from main wallet
         #query the main wallet 
         main_wallet =  Wallet.query.filter_by(user_prof_id = user_id , type ='Main').first()
         #check if the money the user wants to move is lesser than the balance in Main wallet
         if amount > main_wallet.balance:
             needed_balance = amount - main_wallet.balance     
-            return make_response({"message":f"you dont have {amount} take a loan of {needed_balance}?" })
+            return make_response({"msg":f"you dont have {amount} take a loan of {needed_balance}?" })
         #-----deduction
         main_wallet.balance -=amount
 
@@ -276,15 +274,19 @@ class Wallets(Resource):
         # query all wallet types the user has
         source = Wallet.query.filter_by(type = from_wallet , user_prof_id= user_id).first()
         target = Wallet.query.filter_by(type = to_wallet , user_prof_id= user_id).first()
+     
         if source.type == target.type:
-            return make_response(jsonify({"msg":"we cant move money from and to the same wallet"}),200)
+            return make_response({"msg":"we cant move money from and to the same wallet"}),200
         # ------------------------make the transefer
+        if source.status =='Inactive':
+            return make_response({"msg":f"{source.type} is Inactive, activate it first" }),401
+
         #-----check if source has the money
         if amount > source.balance:
             needed_balance = amount - source.balance    
-            return make_response({"message":f"you dont have {amount} take a loan of {needed_balance}?" })
-        print(        source.balance)
-        print(        target.balance)
+            return make_response({"msg":f"you dont have {amount} take a loan of {needed_balance}?" })
+        # print(        source.balance)
+        # print(        target.balance)
         #deduct form source ---------------------
         source.balance -=amount
 
@@ -293,10 +295,12 @@ class Wallets(Resource):
         source.save()
         target.save()
         db.session.commit()
-        print(        source.balance)
-        print(        target.balance)
+        # print(        source.balance)
+        # print(        target.balance)
 
-        return make_response(jsonify({"msg":"Transfere complete"}),200)
+        return make_response({"data":"Transfere complete"},200)
+    
+
 
 
 
@@ -311,11 +315,11 @@ class Wallets(Resource):
      
         wallet = Wallet.query.filter_by(id=id).first()
         if not wallet:
-            return make_response(jsonify({"message":"wallet NOT found"}))
+            return make_response({"msg":"wallet NOT found"})
         
         
         if wallet.type == 'Main':
-              return make_response(jsonify({"message":"cannot deactivate Main wallet"}))
+              return make_response({"msg":"cannot deactivate Main wallet"})
 
         if wallet.status == 'Active':
             wallet.status  ='Inactive'
@@ -341,7 +345,7 @@ class Transactions(Resource):
         all_transactions = Transaction.query.all()
 
         if not all_transactions:
-            return make_response(jsonify({"message":"no beneficiaries found"}))
+            return make_response({"message":"no beneficiaries found"})
         
         return make_response(transactions_Schema.dump(all_transactions),200)
     
@@ -354,13 +358,15 @@ class Transactions(Resource):
 
         '''----------check if-----Beneficary/Receiver-------exists------in the database-------------------'''
         receiver = User_Profile.query.filter_by(Account = data['account']).first()
-        receiver_main_wallet = [ wallet  for wallet in Wallet.query.filter_by(user_prof_id = receiver.id).all() if wallet.type=='Main'][0]
-        # print(receiver_main_wallet.balance)
-
         if not receiver:
-                return make_response(jsonify(
+                print('noooo------------------')
+                return make_response(
             {"message":f"Account does not exist "},
-            ))
+            )
+        # print(ceiv)
+        receiver_main_wallet = [ wallet  for wallet in Wallet.query.filter_by(user_prof_id = receiver.id).all() if wallet.type=='Main'][0]
+        print(receiver_main_wallet)
+
         '''-----------U P D A T E ------------------------W A L L E T --------------B A L A N C E'''
 
         #---- we check if the receiver is a beneficiary of the sender
@@ -439,11 +445,11 @@ class Transactions(Resource):
 
         db.session.add_all([sender_wallet_activity,receiver_wallet_activity])
         db.session.commit()
-
-
-        return make_response(jsonify(
-            {"message":f"money from wallet to {receiver.first_name}"},
-            ))
+        # let's return the sender wallet to update the UI
+        sender_wallet = User_Profile.query.filter_by(id=sender.id).first().wallet
+        return           make_response(wallets_Schema.dump(sender_wallet))
+     # {"message":f"money from wallet to {receiver.first_name}"},
+            
         
 
 '''-----------P E R S O N A L I Z E     T R A N S A C T I O N S---------------'''
@@ -471,7 +477,7 @@ class WalletsActivity(Resource):
         wallet_activity = WalletActivity.query.all()
 
         if not wallet_activity:
-            return make_response(jsonify({"message":"no beneficiaries found"}))
+            return make_response({"message":"no beneficiaries found"})
         
         return make_response(wallet_activities_Schema.dump(wallet_activity),200)
     
