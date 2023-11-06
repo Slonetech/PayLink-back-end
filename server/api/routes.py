@@ -51,7 +51,7 @@ class Signup (Resource):
             user_name=data['user_name'],           
             password = hashed_password,
             public_id = str(uuid.uuid4()),
-            is_admin=0
+            is_admin=1
 
         )
         db.session.add(new_user)
@@ -68,7 +68,8 @@ class Signup (Resource):
         Account = ''.join(random.choice(string.digits) for _ in range(14)),            
         profile_pictur='https://images.ctfassets.net/h6goo9gw1hh6/2sNZtFAWOdP1lmQ33VwRN3/24e953b920a9cd0ff2e1d587742a2472/1-intro-photo-final.jpg?w=1200&h=992&fl=progressive&q=70&fm=jpg',
         user_id = new_user.id,
-        status= rc(['Active', 'Inactive'])
+        # status= rc(['Active', 'Inactive'])
+        status= 'Active'
         # email=data['first_name']+'@' + rc(['gmail','yahoo','outlook','iCloud Mail '])+'.com',
         )
         db.session.add(user_profile)

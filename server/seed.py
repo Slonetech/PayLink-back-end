@@ -121,7 +121,7 @@ with app.app_context():
             sender_id=sender.id,
             sender_name=sender.full_name(),
 
-            amount=random.randint(1000, 200000),
+            amount=random.randint(10, 2000),
             receiver_account=receiver.Account,
             receiver_name=receiver.full_name(),
             category_id=rc(category_id)
