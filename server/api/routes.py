@@ -148,6 +148,8 @@ class Login(Resource):
 
 
        #***************R E F R E S H_____-T O K E N 
+
+
 @auth.route('/refresh')
 class Refresh(Resource):
     @jwt_required(refresh=True)
@@ -194,6 +196,29 @@ class SingleUserProfile(Resource):
              
         return make_response(UserProfile_Schema.dump(user),200)
 
+
+@ns.route('/user/<int:id>')
+class SingleUserProfile(Resource):
+    @jwt_required()
+    def put(self,id):
+        current_user = get_jwt_identity()
+        print('---------------------------: ',id)
+        user = User_Profile.query.filter_by(id=id).first()
+
+        # print(user)
+        # user.status = 'Active'
+
+        if user.status == 'Active':
+            user.status  ='Inactive'
+        elif  user.status == 'Inactive':
+            user.status  ='Active'
+
+        db.session.commit()
+      
+             
+        return make_response(UserProfile_Schema.dump(user),200)
+
+ 
  
 
  
