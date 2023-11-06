@@ -256,14 +256,14 @@ class Wallets(Resource):
         wallet_types = [wallet.type for wallet in Wallet.query.filter_by(user_prof_id = user_id).all()]
         #check if the chosen type already exisits or if the use hser it already
         if type  in wallet_types:
-            return make_response({"msg":f"you already have a {type} wallet"})
+            return make_response({"msg":f"you already have a {type} wallet"},409)
         # deduct the amount the user wants to move from main wallet
         #query the main wallet 
         main_wallet =  Wallet.query.filter_by(user_prof_id = user_id , type ='Main').first()
         #check if the money the user wants to move is lesser than the balance in Main wallet
         if amount > main_wallet.balance:
             needed_balance = amount - main_wallet.balance     
-            return make_response({"msg":f"you dont have {amount} take a loan of {needed_balance}?" })
+            return make_response({"msg":f"you dont have {amount} take a loan of {needed_balance}?" },409)
         #-----deduction
         main_wallet.balance -=amount
 
@@ -279,8 +279,8 @@ class Wallets(Resource):
             status = 'Active'
 
         )
-        print(new_wallet)
         new_wallet.save()
+        print(new_wallet)
         return make_response(wallet_Schema.dump(new_wallet),200)
 
 
@@ -295,30 +295,31 @@ class Wallets(Resource):
     @wallet.expect(move_money)
     def post(self):
         data = request.get_json()
-        # print(data)
+        print(data)
         amount = Decimal(data['amount'])
         user_id=data['user_id']
         to_wallet = data['to_wallet']
         from_wallet = data['from_wallet']
 
-        # the the
+        #
 
-        # query all wallet types the user has
+        # query both the source and target to manipulate them 
         source = Wallet.query.filter_by(type = from_wallet , user_prof_id= user_id).first()
         target = Wallet.query.filter_by(type = to_wallet , user_prof_id= user_id).first()
-     
+
+
         if source.type == target.type:
-            return make_response({"msg":"we cant move money from and to the same wallet"},200)
+            return make_response({"msg":"we cant move money from and to the same wallet"},409)
         # ------------------------make the transefer
         if source.status =='Inactive':
-            return make_response( {"msg":f"{source.type} is Inactive, activate it first" },200)
+            return make_response( {"msg":f"{source.type} is Inactive, activate it first" },404)
         #-----check if source has the money
         if amount > source.balance:
-            needed_balance = amount - source.balance    
-            return make_response(jsonify({"msg":f"you dont have {amount} in your {source.type} take a loan of {needed_balance}?" }))
+            needed_balance = amount - source.balance   
+            return make_response({"msg":f"you dont have {amount} in your {source.type} take a loan of {needed_balance}?" },409)
         print(        source.balance)
         print(        target.balance)
-        #deduct form source ---------------------
+        # #deduct form source ---------------------
         source.balance -=amount
 
         # add to target --------------------
@@ -328,7 +329,7 @@ class Wallets(Resource):
         db.session.commit()
         print(        source.balance)
         print(        target.balance)
-        id = data['user_id']
+      
         wallets = Wallet.query.filter_by(user_prof_id=data['user_id']).all()
 
         print(wallets)
@@ -380,7 +381,7 @@ class Transactions(Resource):
         all_transactions = Transaction.query.all()
 
         if not all_transactions:
-            return make_response({"message":"no beneficiaries found"})
+            return make_response({"msg":"no beneficiaries found"})
         
         return make_response(transactions_Schema.dump(all_transactions),200)
     
@@ -394,9 +395,8 @@ class Transactions(Resource):
         '''----------check if-----Beneficary/Receiver-------exists------in the database-------------------'''
         receiver = User_Profile.query.filter_by(Account = data['account']).first()
         if not receiver:
-                print('noooo------------------')
-                return make_response(
-            {"message":f"Account does not exist "},
+            return make_response(
+            {"msg":f"Account does not exist "},404
             )
         # print(ceiv)
         receiver_main_wallet = [ wallet  for wallet in Wallet.query.filter_by(user_prof_id = receiver.id).all() if wallet.type=='Main'][0]
@@ -416,7 +416,7 @@ class Transactions(Resource):
         ''' ---------check if amount is greater than what is in their wallet-----------------'''
         if int(data['amount']) > sender_main_wallet.balance:
             remainder =  int(data['amount']) - sender_main_wallet.balance            
-            return make_response({"message":f"you dont have {int(data['amount'])} take a loan of {remainder}?" })
+            return make_response({"msg":f"you dont have {int(data['amount'])} take a loan of {remainder}?" })
 
     
         '''---------if else, proceed with the payment ------------------'''
@@ -483,9 +483,7 @@ class Transactions(Resource):
         # let's return the sender wallet to update the UI
         sender_wallet = User_Profile.query.filter_by(id=sender.id).first().wallet
         return           make_response(wallets_Schema.dump(sender_wallet))
-     # {"message":f"money from wallet to {receiver.first_name}"},
-            
-        
+ 
 
 '''-----------P E R S O N A L I Z E     T R A N S A C T I O N S---------------'''
 
