@@ -97,8 +97,8 @@ class Signup (Resource):
 # Create a route to authenticate your users and return JWTs. The
 # create_access_token() function is used to actually generate the JWT.
 @auth.route('/login')
-@auth.expect(login_model)
 class Login(Resource):
+    @auth.expect(login_model)   
     def post(self):
         # print('---------------------------')
         # print(request.get_json())
@@ -107,26 +107,32 @@ class Login(Resource):
 
 
         if not username and not password:
-            return make_response( {"msg": "Bad username or password"})
+            return make_response( {"msg": "Bad username or password"},401)
         
 
 
         user = User.query.filter_by(user_name=username).first()
     
-        # print(user)
     
         # print('--------------__--__--__--__---------')    
         if user is None:
-            return make_response( {"error": "Unauthorized"}), 401
+            return make_response( {"error": "Unauthorized"},401)
         
         #checking if the password is the same as hashed password
         if not bcrypt.check_password_hash(user.password, password):
-            return make_response({"error": "Unauthorized"}), 401
+            return make_response({"error": "Unauthorized"},401)
   
+        print('N000000000000000000000')
 
       
         user_profile = User_Profile.query.filter_by(user_id=user.id).first()
      
+        # print(user_profile)
+        
+        if user_profile.status =='Inactive':
+            return make_response({"error": "your Account is deactivated"},401)
+        # print('N000000000000000000000')
+
      
      
         access_token = create_access_token(identity=user.id)
