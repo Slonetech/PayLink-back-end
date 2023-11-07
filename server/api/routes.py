@@ -408,10 +408,10 @@ class Transactions(Resource):
         #---------check if th erciver id is in 
         #--------------move the money 
         sender = User_Profile.query.filter_by(id = data['sender_id']).first()
-        # print(sender)
-        #-----user has many wallets, so we get the Main wallet
+        print(sender)
+        # -----user has many wallets, so we get the Main wallet
         sender_main_wallet = [ wallet  for wallet in Wallet.query.filter_by(user_prof_id = sender.id).all() if wallet.type=='Main'][0]
-        # print(sender_main_wallet)
+        print(sender_main_wallet)
         # print(sender_main_wallet.balance)
         ''' ---------check if amount is greater than what is in their wallet-----------------'''
         if int(data['amount']) > sender_main_wallet.balance:
