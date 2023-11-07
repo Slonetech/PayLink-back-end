@@ -58,7 +58,9 @@ with app.app_context():
                 Account = ''.join(random.choice(string.digits) for _ in range(14)),            
                 profile_pictur='https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
                 user_id = [user.id for user in user_list][i],
-                status= rc(['Active','Inactive'])
+                status= rc(['Active','Inactive']),
+                gender= rc(['Male','Female','Others'])
+                
                 
             )
             i+=1

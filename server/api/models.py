@@ -59,6 +59,7 @@ class User_Profile(db.Model):
     Account=db.Column(db.Integer)
     profile_pictur= db.Column(db.String)
     status = db.Column(db.String)
+    gender = db.Column(db.String)
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     user = db.relationship('User', backref='users_profile',uselist=False,single_parent=True)

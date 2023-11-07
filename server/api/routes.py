@@ -38,14 +38,19 @@ class Signup (Resource):
     @auth.expect(user_model_input)
     # @auth.marshal_with(post_user)
     def post(self):
-        data =request.get_json()
-        # print(data)
-    
+        data = request.get_json()
+     
+
+        if data['password'] != data['confirm_password']:
+            return make_response({"error": "passwords do not match "})
+
+            
         user_exists = User.query.filter_by(user_name=data['user_name']).first() is not None
 
         if user_exists:
-            return make_response({"error": "User already exists"}, 409)
+            return make_response({"error": "User already exists"})
         
+        print(user_exists)
         '''--------------create a user opject-----------'''
         hashed_password = bcrypt.generate_password_hash(data['password'])
         new_user = User(
@@ -70,7 +75,10 @@ class Signup (Resource):
         profile_pictur='https://images.ctfassets.net/h6goo9gw1hh6/2sNZtFAWOdP1lmQ33VwRN3/24e953b920a9cd0ff2e1d587742a2472/1-intro-photo-final.jpg?w=1200&h=992&fl=progressive&q=70&fm=jpg',
         user_id = new_user.id,
         # status= rc(['Active', 'Inactive'])
-        status= 'Active'
+        status= 'Active',
+        gender= rc(['Male','Female','Others'])
+
+
         # email=data['first_name']+'@' + rc(['gmail','yahoo','outlook','iCloud Mail '])+'.com',
         )
         db.session.add(user_profile)
@@ -110,28 +118,28 @@ class Login(Resource):
 
 
         if not user_name and not password:
-            return make_response( {"error": "Incorrect username or password"},401)
+            return make_response( {"error": "Incorrect username or password"})
         
 
 
         user = User.query.filter_by(user_name=user_name).first()
-        print(user)
         # print('--------------__--__--__--__---------')    
         if user is None:
-            return make_response( {"error": "User does not Exist"},401)
+            return make_response( {"error": "User does not Exist"})
+        print(user.id)
         
         #checking if the password is the same as hashed password
         if not bcrypt.check_password_hash(user.password, password):
-            return make_response({"error": "Incorrect username or password"},401)
+            return make_response({"error": "Incorrect username or password"})
   
 
       
         user_profile = User_Profile.query.filter_by(user_id=user.id).first()
-        print('---------------login-------------------------')
+        print('---------------login-------------------------',user_profile)
         
         
         if user_profile.status =='Inactive':
-            return make_response({"error": "your Account is deactivated"},401)
+            return make_response({"error": "your Account is deactivated"})
         # print('N000000000000000000000')
 
      
