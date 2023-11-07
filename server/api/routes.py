@@ -57,7 +57,7 @@ class Signup (Resource):
             user_name=data['user_name'],           
             password = hashed_password,
             public_id = str(uuid.uuid4()),
-            is_admin=0
+            is_admin=1
 
         )
         db.session.add(new_user)
@@ -305,7 +305,18 @@ class Wallets(Resource):
 
 
 
+@wallet.route('/all_wallet')
+class Wallets(Resource):
+    def get(self):
 
+        all_wallets = Wallet.query.all()
+        print(all_wallets)
+        
+        if not all_wallets:
+            return make_response({"error":"no Wallets currently"})
+        
+        return make_response(wallets_Schema.dump(all_wallets),200)
+    
 
 
 '''_____________M O V E      M O N E Y  ____________________________'''
@@ -518,7 +529,16 @@ class Transactions(Resource):
 
 
 
+@transactions.route('/all_transactions')
+class Transactions(Resource):
 
+    def get(self):
+        all_transactions = Transaction.query.all()
+
+        if not all_transactions:
+            return make_response({"msg":"no beneficiaries found"},409)
+        
+        return make_response(transactions_Schema.dump(all_transactions),200)
 
 
  

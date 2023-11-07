@@ -32,20 +32,20 @@ def user_lookup_callback(_jwt_header, jwt_data):
 api = Api()
 api.init_app(app)
 
-ns=Namespace('/',description='All users routes', authorizations=authorizations)
+ns=Namespace('/',description='All users operations for the admins', authorizations=authorizations)
 api.add_namespace(ns)
 
 
 auth=Namespace('auth', description='Authorization related operations', authorizations=authorizations)
 api.add_namespace(auth)
 
-transactions=Namespace('transaction',description='Authorization related operations', authorizations=authorizations)
+transactions=Namespace('transaction',description='transactions related operations', authorizations=authorizations)
 api.add_namespace(transactions)
 
-wallet=Namespace('wallet',description='Authorization related operations', authorizations=authorizations)
+wallet=Namespace('wallet',description='wallet related operations', authorizations=authorizations)
 api.add_namespace(wallet)
 
-beneficiaries=Namespace('beneficiaries',description='Authorization related operations', authorizations=authorizations)
+beneficiaries=Namespace('beneficiaries',description='beneficiaries related operations', authorizations=authorizations)
 api.add_namespace(beneficiaries)
 
 
