@@ -544,13 +544,15 @@ class UserTransactions(Resource):
 
 @wallet.route('/wallet-Activity')
 class WalletsActivity(Resource):
+    method_decorators = [jwt_required()]
+    @transactions.doc(security='jwToken')
     def get(self):
-        wallet_activity = WalletActivity.query.all()
+        user_wallet_activity = WalletActivity.query.filter_by(user_id=current_user.id).all()
 
-        if not wallet_activity:
+        if not user_wallet_activity:
             return make_response({"message":"no beneficiaries found"})
         
-        return make_response(wallet_activities_Schema.dump(wallet_activity),200)
+        return make_response(wallet_activities_Schema.dump(user_wallet_activity),200)
     
 
 
