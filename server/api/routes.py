@@ -300,33 +300,37 @@ class Wallets(Resource):
 
 @wallet.route('/move-movey')
 class Wallets(Resource):
-    @wallet.expect(move_money)
+    method_decorators = [jwt_required()]
+    @wallet.doc(security='jwToken')
     def post(self):
         data = request.get_json()
         print(data)
         amount = Decimal(data['amount'])
-        user_id=data['user_id']
+        user_id=current_user.id
         to_wallet = data['to_wallet']
         from_wallet = data['from_wallet']
 
-        #
+
+
+  
 
         # query both the source and target to manipulate them 
         source = Wallet.query.filter_by(type = from_wallet , user_prof_id= user_id).first()
         target = Wallet.query.filter_by(type = to_wallet , user_prof_id= user_id).first()
+        if not source or not target:
+            return make_response({"error":"you dont have the wallet, please create it "})
 
 
         if source.type == target.type:
-            return make_response({"msg":"we cant move money from and to the same wallet"},409)
+            return make_response({"error":"we cant move money from and to the same wallet"})
         # ------------------------make the transefer
-        if source.status =='Inactive':
-            return make_response( {"msg":f"{source.type} is Inactive, activate it first" },404)
-        #-----check if source has the money
+        if source.status =='Inactive' or target.status =='Inactive':
+            return make_response( {"error":f"you cannot send to /from inactive wallets, activate them first" })
+        #-----------------------------------check if source has the money
         if amount > source.balance:
             needed_balance = amount - source.balance   
-            return make_response({"msg":f"you dont have {amount} in your {source.type} take a loan of {needed_balance}?" },409)
-        print(        source.balance)
-        print(        target.balance)
+            return make_response({"error":f"you dont have {amount} in your {source.type} take a loan of {needed_balance}?" })
+        # if  all ()(source.type ,target.type)
         # #deduct form source ---------------------
         source.balance -=amount
 
@@ -335,12 +339,10 @@ class Wallets(Resource):
         source.save()
         target.save()
         db.session.commit()
-        print(        source.balance)
-        print(        target.balance)
+ 
       
-        wallets = Wallet.query.filter_by(user_prof_id=data['user_id']).all()
+        wallets = Wallet.query.filter_by(user_prof_id=user_id).all()
 
-        print(wallets)
 
         return jsonify(wallets_Schema.dump(wallets))
     
@@ -390,7 +392,7 @@ class Transactions(Resource):
         all_transactions = Transaction.query.all()
 
         if not all_transactions:
-            return make_response({"msg":"no beneficiaries found"})
+            return make_response({"msg":"no beneficiaries found"},409)
         
         return make_response(transactions_Schema.dump(all_transactions),200)
     
@@ -409,7 +411,7 @@ class Transactions(Resource):
         print(receiver)
         if not receiver or  len(receiver.wallet) ==0:
             return make_response(
-            {"error":f"Account does not exist "},404
+            {"error":f"Account does not exist "}
             )
         receiver_main_wallet = [ wallet  for wallet in receiver.wallet if wallet.type=='Main'][0]
         print(receiver_main_wallet)
@@ -497,9 +499,9 @@ class Transactions(Resource):
         db.session.add_all([sender_wallet_activity,receiver_wallet_activity])
         db.session.commit()
         # let's return the sender wallet to update the UI
-        sender_wallet =[ wallet for wallet in sender.wallet if wallet.type=='Main']
-        print(sender_wallet)
-        return           make_response(wallets_Schema.dump(sender_wallet))
+        # sender_wallet =[ wallet for wallet in sender.wallet if wallet.type=='Main']
+        # print(sender_wallet)
+        return           make_response(wallets_Schema.dump(sender.wallet))
 
 
 
