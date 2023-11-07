@@ -254,7 +254,7 @@ class Wallets(Resource):
         print(user_wallets)
         
         if not user_wallets:
-            return make_response({"msg":"no Wallets currently"})
+            return make_response({"error":"no Wallets currently"})
         
         return make_response(wallets_Schema.dump(user_wallets),200)
     
@@ -273,14 +273,14 @@ class Wallets(Resource):
         wallet_types = [wallet.type for wallet in Wallet.query.filter_by(user_prof_id = user_id).all()]
         #check if the chosen type already exisits or if the use hser it already
         if type  in wallet_types:
-            return make_response({"msg":f"you already have a {type} wallet"},409)
+            return make_response({"error":f"you already have a {type} wallet"})
         # deduct the amount the user wants to move from main wallet
         #query the main wallet 
         main_wallet =  Wallet.query.filter_by(user_prof_id = user_id , type ='Main').first()
         #check if the money the user wants to move is lesser than the balance in Main wallet
         if amount > main_wallet.balance:
             needed_balance = amount - main_wallet.balance     
-            return make_response({"msg":f"you dont have {amount} take a loan of {needed_balance}?" },409)
+            return make_response({"error":f"you dont have {amount} take a loan of {needed_balance}?" })
         #-----deduction
         main_wallet.balance -=amount
 
@@ -297,7 +297,11 @@ class Wallets(Resource):
 
         )
         new_wallet.save()
-        return make_response(wallet_Schema.dump(new_wallet),200)
+        user_wallets = Wallet.query.filter_by(user_prof_id = user_id).all()
+        print(user_wallets)
+
+
+        return make_response(wallets_Schema.dump(user_wallets),200)
 
 
 
