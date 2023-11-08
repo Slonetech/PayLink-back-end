@@ -57,7 +57,7 @@ class Signup (Resource):
             user_name=data['user_name'],           
             password = hashed_password,
             public_id = str(uuid.uuid4()),
-            is_admin=1
+            is_admin=0
 
         )
         db.session.add(new_user)
