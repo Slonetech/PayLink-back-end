@@ -287,7 +287,7 @@ with app.app_context():
 
 
 #--------------wallet and user profile relationship test
-    wallet = Wallet.query.filter_by(user_prof_id =28).all()[1]
+    wallet = Wallet.query.filter_by(user_prof_id =62).all()[1]
     print(wallet)
     db.session.delete(wallet)
     db.session.commit()

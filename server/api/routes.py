@@ -206,7 +206,6 @@ class SingleUserProfile(Resource):
 
         # print('---------------------------: ',current_user)
         user = User_Profile.query.filter_by(id=current_user.id).first()
-        # print(user)
         
 
       
@@ -217,7 +216,6 @@ class SingleUserProfile(Resource):
 @ns.route('/user/<int:id>')
 class SingleUserProfile(Resource):
     def put(self,id):
-        print('---------------------------: ',id)
         user = User_Profile.query.filter_by(id=id).first()
 
         # print(user)
@@ -244,9 +242,7 @@ class Wallets(Resource):
     method_decorators = [jwt_required()]
     @wallet.doc(security='jwToken')
     def get(self):
-        print('-----------wallet----------------------------')
-        print(current_user)
-        print('---------------------------------------')
+     
 
         user_wallets = User_Profile.query.filter_by(id=current_user.id).first().wallet
         print(user_wallets)
@@ -256,8 +252,6 @@ class Wallets(Resource):
         
         return make_response(wallets_Schema.dump(user_wallets),200)
     
-
-
     '''---------------------------P O S T ------------W A L  L E T----------------'''
     @wallet.expect(create_wallet)
     def post(self):
@@ -331,10 +325,6 @@ class Wallets(Resource):
         to_wallet = data['to_wallet']
         from_wallet = data['from_wallet']
 
-
-
-  
-
         # query both the source and target to manipulate them 
         source = Wallet.query.filter_by(type = from_wallet , user_prof_id= user_id).first()
         target = Wallet.query.filter_by(type = to_wallet , user_prof_id= user_id).first()
@@ -377,16 +367,19 @@ class Wallets(Resource):
 class Wallets(Resource):
     @wallet.expect(update_wallet)
     def put(self,id):
-        data = request.get_json()
-        # print(id)
      
         wallet = Wallet.query.filter_by(id=id).first()
+        # i need to reverse get the user using the wallet.user_prof_id
+        user=User_Profile.query.filter_by(id=wallet.user_prof_id).first()
         if not wallet:
             return make_response({"msg":"wallet NOT found"})
         
         
+        print(wallet)
+        print(user.wallet)
+        
         if wallet.type == 'Main':
-              return make_response({"msg":"cannot deactivate Main wallet"})
+              return make_response({"error":"cannot deactivate Main wallet"})
 
         if wallet.status == 'Active':
             wallet.status  ='Inactive'
@@ -394,10 +387,9 @@ class Wallets(Resource):
             wallet.status  ='Active'
 
         db.session.commit()
-        # print(wallet)
         
         # # return make_response(wallets_Schema.dump(all_wallets),200)
-        return make_response(wallet_Schema.dump(wallet),200)
+        return make_response(wallets_Schema.dump(user.wallet),200)
     
 
    
