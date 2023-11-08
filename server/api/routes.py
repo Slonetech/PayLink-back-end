@@ -216,14 +216,11 @@ class SingleUserProfile(Resource):
 
 @ns.route('/user/<int:id>')
 class SingleUserProfile(Resource):
-    @jwt_required()
     def put(self,id):
-        current_user = get_jwt_identity()
         print('---------------------------: ',id)
         user = User_Profile.query.filter_by(id=id).first()
 
         # print(user)
-        # user.status = 'Active'
 
         if user.status == 'Active':
             user.status  ='Inactive'
@@ -231,6 +228,7 @@ class SingleUserProfile(Resource):
             user.status  ='Active'
 
         db.session.commit()
+        print(user ) 
       
              
         return make_response(UserProfile_Schema.dump(user),200)
@@ -567,8 +565,9 @@ class WalletsActivity(Resource):
     method_decorators = [jwt_required()]
     @transactions.doc(security='jwToken')
     def get(self):
+        print('----------WAC---------------',current_user)
         user_wallet_activity = WalletActivity.query.filter_by(user_id=current_user.id).all()
-
+        print('---------WA------------------',user_wallet_activity)
         if not user_wallet_activity:
             return make_response({"message":"no beneficiaries found"})
         
