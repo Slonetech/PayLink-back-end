@@ -70,6 +70,7 @@ class User_Profile(db.Model):
     wallet_ctivities = db.relationship('WalletActivity', backref='user_profile', lazy=True)
 
     
+    # 
 
     # beneficiary relationship
     user_beneficiary_association = db.relationship('UserBeneficiary', back_populates='user')
