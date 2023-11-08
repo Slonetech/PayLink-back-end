@@ -158,7 +158,7 @@ class Login(Resource):
 
             
 
-        })
+        },200)
      
 
 
@@ -204,9 +204,9 @@ class SingleUserProfile(Resource):
     def get(self):
         # current_user = get_jwt_identity()
 
-        print('---------------------------: ',current_user)
+        # print('---------------------------: ',current_user)
         user = User_Profile.query.filter_by(id=current_user.id).first()
-        print(user)
+        # print(user)
         
 
       
@@ -423,8 +423,8 @@ class Transactions(Resource):
     @transactions.doc(security='jwToken')
     def post(self):
         data = request.get_json()
-        print('---------T----------------',data)
-        print('---------T----------------',current_user.id)
+        # print('---------T----------------',data)
+        # print('---------T----------------',current_user.id)
 
 
         '''----------check if-----Beneficary/Receiver-------exists------in the database-------------------'''
@@ -434,8 +434,13 @@ class Transactions(Resource):
             return make_response(
             {"error":f"Account does not exist "}
             )
+        if  receiver.status == 'Inactive':
+            return make_response(
+            {"error":f"user account is deactivated "}
+            )
+        
         receiver_main_wallet = [ wallet  for wallet in receiver.wallet if wallet.type=='Main'][0]
-        print(receiver_main_wallet)
+        # print(receiver_main_wallet)
 
         # '''-----------U P D A T E ------------------------W A L L E T --------------B A L A N C E'''
 
@@ -443,10 +448,8 @@ class Transactions(Resource):
         #---------check if th erciver id is in 
         #--------------move the money 
         sender = User_Profile.query.filter_by(id = current_user.id).first()
-        print(sender)
         # -----user has many wallets, so we get the Main wallet
         sender_main_wallet = [ wallet  for wallet in Wallet.query.filter_by(user_prof_id = sender.id).all() if wallet.type=='Main'][0]
-        print(sender_main_wallet)
         # print(sender_main_wallet.balance)
         ''' ---------check if amount is greater than what is in their wallet-----------------'''
         if int(data['amount']) > sender_main_wallet.balance:
@@ -455,17 +458,13 @@ class Transactions(Resource):
 
     
         '''---------if else, proceed with the payment ------------------'''
-        print(sender_main_wallet.balance)
-        print('---------before deduction')
         sender_main_wallet.balance -= int(data['amount'])
         receiver_main_wallet.balance += int(data['amount'])
         '''--------Charge the sender the transaction feees and deduct form the balance------------------'''
         deduction_amount = Transaction.transaction_fees(data['amount'])
         sender_main_wallet.balance -= Decimal(deduction_amount)
 
-        # print(deduction_amount)
-        print(sender_main_wallet.balance)
-        print('---------after deduction')
+   
 
         '''----------check if the RECEIVER is a beneficiary of the sender-------------------'''
         if receiver.first_name not in [ben.name for ben in  sender.beneficiaries]:
@@ -474,17 +473,12 @@ class Transactions(Resource):
             Account = receiver.Account
          )
             beneficiary.save()
-            # sender.beneficiaries.append(beneficiary)
             user_beneficiary = UserBeneficiary(
              sender_id=sender.id,
              beneficiary_id = beneficiary.id
          )
             user_beneficiary.save()
-        # print(sender_main_wallet.balance)
-        # print('_________________________________________')
-        # print(receiver_main_wallet.balance)
-
-
+      
 
         # ''' #-------------------------P O S T     T R A N S A C T I O N'''
         transaction = Transaction(
@@ -499,7 +493,6 @@ class Transactions(Resource):
 
         )
         transaction.save()
-        print(transaction)
 
 
         '''------P O P U L A T E --------W A L L E T-------------A C T I V I T Y       TABLE'''
@@ -519,9 +512,7 @@ class Transactions(Resource):
 
         db.session.add_all([sender_wallet_activity,receiver_wallet_activity])
         db.session.commit()
-        # let's return the sender wallet to update the UI
-        # sender_wallet =[ wallet for wallet in sender.wallet if wallet.type=='Main']
-        # print(sender_wallet)
+      
         return           make_response(wallets_Schema.dump(sender.wallet))
 
 
