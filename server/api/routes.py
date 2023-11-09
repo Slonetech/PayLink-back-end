@@ -171,7 +171,6 @@ class Refresh(Resource):
     def post(self):
         # print(request.get_json())
         identity = get_jwt_identity()
-        print(identity)
         access = create_access_token(identity = identity)
 
     
@@ -204,12 +203,7 @@ class SingleUserProfile(Resource):
     def get(self):
         # current_user = get_jwt_identity()
 
-        # print('---------------------------: ',current_user)
         user = User_Profile.query.filter_by(id=current_user.id).first()
-        
-
-      
-             
         return make_response(UserProfile_Schema.dump(user),200)
 
 
@@ -245,7 +239,6 @@ class Wallets(Resource):
      
 
         user_wallets = User_Profile.query.filter_by(id=current_user.id).first().wallet
-        print(user_wallets)
         
         if not user_wallets:
             return make_response({"error":"no Wallets currently"})
@@ -253,12 +246,13 @@ class Wallets(Resource):
         return make_response(wallets_Schema.dump(user_wallets),200)
     
     '''---------------------------P O S T ------------W A L  L E T----------------'''
+    method_decorators = [jwt_required()]
     @wallet.expect(create_wallet)
+    @wallet.doc(security='jwToken')
     def post(self):
         data = request.get_json()
-        print(data)
         amount = Decimal(data['amount'])
-        user_id=data['user_id']
+        user_id=current_user.id
         type = data['type']
 
         # query all wallet types the user has
@@ -269,7 +263,7 @@ class Wallets(Resource):
         # deduct the amount the user wants to move from main wallet
         #query the main wallet 
         main_wallet =  Wallet.query.filter_by(user_prof_id = user_id , type ='Main').first()
-        #check if the money the user wants to move is lesser than the balance in Main wallet
+        # check if the money the user wants to move is lesser than the balance in Main wallet
         if amount > main_wallet.balance:
             needed_balance = amount - main_wallet.balance     
             return make_response({"error":f"you dont have {amount} take a loan of {needed_balance}?" })
@@ -290,12 +284,25 @@ class Wallets(Resource):
         )
         new_wallet.save()
         user_wallets = Wallet.query.filter_by(user_prof_id = user_id).all()
-        print(user_wallets)
 
 
         return make_response(wallets_Schema.dump(user_wallets),200)
 
 
+@wallet.route('/mainbalance')
+class Wallets(Resource):
+    method_decorators = [jwt_required()]
+    @wallet.doc(security='jwToken')
+    def get(self):
+     
+
+        user_wallets = User_Profile.query.filter_by(id=current_user.id).first().wallet
+        
+        if not user_wallets:
+            return make_response({"error":"no Wallets currently"})
+        
+        return make_response(wallets_Schema.dump(user_wallets),200)
+    
 
 @wallet.route('/all_wallet')
 class Wallets(Resource):
@@ -400,14 +407,15 @@ class Wallets(Resource):
 '''_____________A L L          T R A N S A C T I O N S____________________________'''
 @transactions.route('/transactions')
 class Transactions(Resource):
-
+    method_decorators = [jwt_required()]
+    @transactions.doc(security='jwToken')
     def get(self):
-        all_transactions = Transaction.query.all()
+        all_transactions = Transaction.query.filter_by(sender_id=current_user.id).all()
 
-        if not all_transactions:
-            return make_response({"msg":"no beneficiaries found"},409)
+        # if not all_transactions:
+        #     return make_response({"msg":"no beneficiaries found"},409)
         
-        return make_response(transactions_Schema.dump(all_transactions),200)
+        # return make_response(transactions_Schema.dump(all_transactions),200)
     
     '''_______C R E A T E _____________-T R A N S A C T I O N S_________________'''
     # @transactions.expect(create_transaction)
@@ -421,7 +429,6 @@ class Transactions(Resource):
 
         '''----------check if-----Beneficary/Receiver-------exists------in the database-------------------'''
         receiver = User_Profile.query.filter_by(Account = data['account']).first()
-        print(receiver)
         if not receiver or  len(receiver.wallet) ==0:
             return make_response(
             {"error":f"Account does not exist "}
@@ -432,7 +439,6 @@ class Transactions(Resource):
             )
         
         receiver_main_wallet = [ wallet  for wallet in receiver.wallet if wallet.type=='Main'][0]
-        # print(receiver_main_wallet)
 
         # '''-----------U P D A T E ------------------------W A L L E T --------------B A L A N C E'''
 
@@ -442,7 +448,6 @@ class Transactions(Resource):
         sender = User_Profile.query.filter_by(id = current_user.id).first()
         # -----user has many wallets, so we get the Main wallet
         sender_main_wallet = [ wallet  for wallet in Wallet.query.filter_by(user_prof_id = sender.id).all() if wallet.type=='Main'][0]
-        # print(sender_main_wallet.balance)
         ''' ---------check if amount is greater than what is in their wallet-----------------'''
         if int(data['amount']) > sender_main_wallet.balance:
             remainder =  int(data['amount']) - sender_main_wallet.balance            
@@ -548,9 +553,7 @@ class WalletsActivity(Resource):
     method_decorators = [jwt_required()]
     @transactions.doc(security='jwToken')
     def get(self):
-        print('----------WAC---------------',current_user)
         user_wallet_activity = WalletActivity.query.filter_by(user_id=current_user.id).all()
-        print('---------WA------------------',user_wallet_activity)
         if not user_wallet_activity:
             return make_response({"message":"no beneficiaries found"})
         
