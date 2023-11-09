@@ -34,6 +34,7 @@ from flask_jwt_extended import create_refresh_token,create_access_token, get_jwt
 
 @auth.route('/signup')
 class Signup (Resource):
+
     @auth.expect(user_model_input)
     # @auth.marshal_with(post_user)
     def post(self):
@@ -241,7 +242,7 @@ class Wallets(Resource):
     method_decorators = [jwt_required()]
     @wallet.doc(security='jwToken')
     def get(self):
-        print('--------------------------------')
+     
 
         user_wallets = User_Profile.query.filter_by(id=current_user.id).first().wallet
         print(user_wallets)
