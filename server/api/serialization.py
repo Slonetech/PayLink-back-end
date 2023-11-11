@@ -2,25 +2,50 @@ from api import  make_response,jsonify,User,app,ma,User_Profile,Category,Benefic
 from api import  Wallet,Transaction,WalletActivity
 
 from flask_restx import Api,Resource,Namespace,fields
+from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, get_jwt_identity, jwt_required, current_user
+
+
+jwt = JWTManager(app)
+
+jwt.init_app(app)
+
+
+authorizations = {
+    "jwToken":{
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization"
+    }
+}
+
+@jwt.user_identity_loader
+def user_identity_lookup(user):
+    return user
+
+
+@jwt.user_lookup_loader
+def user_lookup_callback(_jwt_header, jwt_data):
+    identity = jwt_data['sub']
+    return User_Profile.query.filter_by(id=identity).first()
+
 
 api = Api()
 api.init_app(app)
 
-
-ns=Namespace('/')
+ns=Namespace('/',description='All users operations for the admins', authorizations=authorizations)
 api.add_namespace(ns)
 
 
-auth=Namespace('auth')
+auth=Namespace('auth', description='Authorization related operations', authorizations=authorizations)
 api.add_namespace(auth)
 
-transactions=Namespace('transaction')
+transactions=Namespace('transaction',description='transactions related operations', authorizations=authorizations)
 api.add_namespace(transactions)
 
-wallet=Namespace('wallet')
+wallet=Namespace('wallet',description='wallet related operations', authorizations=authorizations)
 api.add_namespace(wallet)
 
-beneficiaries=Namespace('beneficiaries')
+beneficiaries=Namespace('beneficiaries',description='beneficiaries related operations', authorizations=authorizations)
 api.add_namespace(beneficiaries)
 
 

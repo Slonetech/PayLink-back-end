@@ -59,6 +59,7 @@ class User_Profile(db.Model):
     Account=db.Column(db.Integer)
     profile_pictur= db.Column(db.String)
     status = db.Column(db.String)
+    gender = db.Column(db.String)
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     user = db.relationship('User', backref='users_profile',uselist=False,single_parent=True)
@@ -69,6 +70,7 @@ class User_Profile(db.Model):
     wallet_ctivities = db.relationship('WalletActivity', backref='user_profile', lazy=True)
 
     
+    # 
 
     # beneficiary relationship
     user_beneficiary_association = db.relationship('UserBeneficiary', back_populates='user')
@@ -80,7 +82,7 @@ class User_Profile(db.Model):
  
 
     def __repr__(self):
-        return f'(id: {self.id}, first_name: {self.first_name},last_name: {self.last_name}, address: {self.address},  phone: {self.phone_number}, wallets={self.wallet} )'
+        return f'(id: {self.id}, first_name: {self.first_name},last_name: {self.last_name}, address: {self.address},  phone: {self.phone_number}, wallets={self.wallet},status: {self.status} )'
 
 
 
