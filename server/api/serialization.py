@@ -1,238 +1,130 @@
-from api import  make_response,jsonify,User,app,ma,User_Profile,Category,Beneficiary
-from api import  Wallet,Transaction,WalletActivity
+from flask_restx import fields, Model
+from flask_marshmallow import Schema
+from api.models import (
+    User, User_Profile, Wallet, 
+    Transaction, Beneficiary, 
+    Category, WalletActivity
+)
 
-from flask_restx import Api,Resource,Namespace,fields
-from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, get_jwt_identity, jwt_required, current_user
+# Base configuration
+api = Api(
+    title='PayLink API',
+    version='1.0',
+    description='A digital wallet and payment system API',
+    authorizations={
+        'Bearer Auth': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization',
+            'description': 'Type in the *Value* input box: Bearer {your JWT token}'
+        }
+    },
+    security='Bearer Auth'
+)
 
+# Namespaces
+ns = api.namespace('users', description='User operations')
+auth = api.namespace('auth', description='Authentication operations')
+wallet = api.namespace('wallet', description='Wallet operations')
+transactions = api.namespace('transactions', description='Transaction operations')
+beneficiaries = api.namespace('beneficiaries', description='Beneficiary operations')
 
-jwt = JWTManager(app)
-
-jwt.init_app(app)
-
-
-authorizations = {
-    "jwToken":{
-        "type": "apiKey",
-        "in": "header",
-        "name": "Authorization"
-    }
-}
-
-@jwt.user_identity_loader
-def user_identity_lookup(user):
-    return user
-
-
-@jwt.user_lookup_loader
-def user_lookup_callback(_jwt_header, jwt_data):
-    identity = jwt_data['sub']
-    return User_Profile.query.filter_by(id=identity).first()
-
-
-api = Api()
-api.init_app(app)
-
-ns=Namespace('/',description='All users operations for the admins', authorizations=authorizations)
-api.add_namespace(ns)
-
-
-auth=Namespace('auth', description='Authorization related operations', authorizations=authorizations)
-api.add_namespace(auth)
-
-transactions=Namespace('transaction',description='transactions related operations', authorizations=authorizations)
-api.add_namespace(transactions)
-
-wallet=Namespace('wallet',description='wallet related operations', authorizations=authorizations)
-api.add_namespace(wallet)
-
-beneficiaries=Namespace('beneficiaries',description='beneficiaries related operations', authorizations=authorizations)
-api.add_namespace(beneficiaries)
-
-
-
-
-class UserSchema(ma.SQLAlchemyAutoSchema):
+# Schemas
+class UserSchema(Schema):
     class Meta:
         model = User
-        ordered = True
+        fields = ('id', 'user_name', 'public_id', 'is_admin', 'is_active', 'last_login')
 
-    # beneficiaries = ma.List(ma.Nested("BeneficiarySchema"))
-    # wallet = ma.Nested("WalletSchema")
-
-User_Schema = UserSchema()
-Users_Schema = UserSchema(many=True)
-
-
-
-
-class UserProfileSchema(ma.SQLAlchemyAutoSchema):
+class UserProfileSchema(Schema):
     class Meta:
         model = User_Profile
-        ordered = True
+        fields = ('id', 'first_name', 'last_name', 'account_number', 
+                 'phone_number', 'status', 'profile_picture', 'wallets')
+    
+    wallets = fields.Nested('WalletSchema', many=True)
+    full_name = fields.String()
 
-    beneficiaries = ma.List(ma.Nested("BeneficiarySchema"))
-    wallet = ma.List(ma.Nested("WalletSchema"))
-    transactions =  ma.List(ma.Nested("TreansactionSchema"))
-    wallet_ctivities=ma.List(ma.Nested("WalletActivitySchema"))
-
-UserProfile_Schema = UserProfileSchema()
-UserProfiles_Schema = UserProfileSchema(many=True)
-
-
-'''------------B E N E F I C I A R I E S      S C H E M A---------'''
-
-class BeneficiarySchema(ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = Beneficiary
-        ordered = True
-
-Beneficiary_Schema = BeneficiarySchema()
-Beneficiarys_Schema = BeneficiarySchema(many=True)
-
-'''__________________________W A L L E T____________________________________________'''
-
-class WalletSchema(ma.SQLAlchemyAutoSchema):
+class WalletSchema(Schema):
     class Meta:
         model = Wallet
-        ordered = True
-    balance = fields.Float()
-    user_prof_id=ma.auto_field()
-    
-wallet_Schema = WalletSchema()
-wallets_Schema = WalletSchema(many=True)
+        fields = ('id', 'type', 'balance', 'account_number', 'status')
 
-
-
-class TreansactionSchema(ma.SQLAlchemyAutoSchema):
+class TransactionSchema(Schema):
     class Meta:
         model = Transaction
-        ordered = True
-    sender_id=ma.auto_field()
-    # category=ma.auto_field()
-    category = ma.Nested("CategorySchema")
+        fields = ('id', 'transaction_id', 'amount', 'fee', 'status', 
+                 'description', 'created_at', 'sender', 'receiver_account')
+    
+    sender = fields.Nested(UserProfileSchema, only=('id', 'full_name', 'account_number'))
+    created_at = fields.DateTime(format='%Y-%m-%d %H:%M:%S')
 
+class BeneficiarySchema(Schema):
+    class Meta:
+        model = Beneficiary
+        fields = ('id', 'name', 'account_number', 'bank_code')
 
- 
-transaction_Schema = TreansactionSchema()
-transactions_Schema = TreansactionSchema(many=True)
-
-
-
-class CategorySchema(ma.SQLAlchemyAutoSchema):
+class CategorySchema(Schema):
     class Meta:
         model = Category
-        ordered = True
- 
-category_Schema = CategorySchema()
-categories_Schema = CategorySchema(many=True)
+        fields = ('id', 'name', 'description')
 
-class WalletActivitySchema(ma.SQLAlchemyAutoSchema):
+class WalletActivitySchema(Schema):
     class Meta:
         model = WalletActivity
-        ordered = True
-
-    user_id=ma.auto_field()
+        fields = ('id', 'activity_type', 'amount', 'description', 
+                 'created_at', 'wallet', 'transaction')
     
+    wallet = fields.Nested(WalletSchema, only=('id', 'type', 'account_number'))
+    transaction = fields.Nested(TransactionSchema, only=('id', 'transaction_id'))
+    created_at = fields.DateTime(format='%Y-%m-%d %H:%M:%S')
+
+# Instantiate schemas
+User_Schema = UserSchema()
+Users_Schema = UserSchema(many=True)
+UserProfile_Schema = UserProfileSchema()
+UserProfiles_Schema = UserProfileSchema(many=True)
+wallet_Schema = WalletSchema()
+wallets_Schema = WalletSchema(many=True)
+transaction_Schema = TransactionSchema()
+transactions_Schema = TransactionSchema(many=True)
+Beneficiary_Schema = BeneficiarySchema()
+Beneficiarys_Schema = BeneficiarySchema(many=True)
+category_Schema = CategorySchema()
+categories_Schema = CategorySchema(many=True)
 wallet_activity_Schema = WalletActivitySchema()
 wallet_activities_Schema = WalletActivitySchema(many=True)
 
-
-class TreansactionSchema(ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = Transaction
-        ordered = True
-    sender_id=ma.auto_field()
-    # category=ma.auto_field()
-    category = ma.Nested("CategorySchema")
-
-
- 
-transaction_Schema = TreansactionSchema()
-transactions_Schema = TreansactionSchema(many=True)
-
-
-
-'''_________A P I _________M O D E L S___________________'''
-
-                #*********WALLET API.MODEL*************************************
-update_wallet =api.model('update_wallet',{
-
-    'id':fields.Integer,
-  
-
-
-})
-create_wallet =api.model('create_wallet',{
-# i will  set the amoun to 0 since the is a new wallt the user created and status to Active
-    'user_prof_id':fields.Integer,
-    'type':fields.String,
-  
-
-
-})
-move_money =api.model('move_money',{
-# i will  set the amoun to 0 since the is a new wallt the user created and status to Active
-    'amount':fields.Integer,
-    'from_wallet':fields.String,
-    'to_wallet':fields.String,
-    'user_id':fields.String,
-  
-
-
-})
-create_transaction =api.model('create_transaction',{
-    
-    'amount':fields.Integer,
-    'receiver_account':fields.String,
-    'sender_id':fields.String,
-    'category':fields.String,
-
- 
-  
-
+# API Models for documentation
+user_model_input = api.model('UserInput', {
+    'user_name': fields.String(required=True),
+    'password': fields.String(required=True),
+    'confirm_password': fields.String(required=True),
+    'first_name': fields.String(required=True),
+    'last_name': fields.String(required=True),
+    'phone_number': fields.String(required=True),
+    'address': fields.String,
+    'is_admin': fields.Boolean(default=False)
 })
 
-'''__________S I G N U P ____________'''
-
-user_model_input =api.model('signup',{
-    
-    'amout':fields.String,
-    'type':fields.String,
-    'user_id':fields.String,
-    # 'roles':fields.String change--- this when handlind the posting
-    # 'public_id':fields.String,-- and this one aswell
-  
-
-})
-post_user =api.model('signup_post',{
-
-
-    'first_name':fields.String,
-    'last_name':fields.String,
-    'user_name':fields.String,
-    'email':fields.String,
-    'password':fields.String,
-    'address':fields.String,
-    'phone':fields.String
-  
-
+login_model = api.model('Login', {
+    'user_name': fields.String(required=True),
+    'password': fields.String(required=True)
 })
 
-
-
-login_model =api.model('login',{
-    
-    'user_name':fields.String,
-    # 'profile_picture':fields.String,
-    'password':fields.String,
-    # 'roles':fields.String change--- this when handlind the posting
-    # 'public_id':fields.String,-- and this one aswell
-  
-
+create_wallet = api.model('CreateWallet', {
+    'type': fields.String(required=True, enum=['Savings', 'Investment', 'Business']),
+    'amount': fields.Float(required=True, min=0)
 })
 
+create_transaction = api.model('CreateTransaction', {
+    'amount': fields.Float(required=True, min=0.01),
+    'account_number': fields.String(required=True),
+    'description': fields.String
+})
 
-
-
-
-
+beneficiary_model = api.model('Beneficiary', {
+    'name': fields.String(required=True),
+    'account_number': fields.String(required=True),
+    'nickname': fields.String,
+    'bank_code': fields.String
+})
